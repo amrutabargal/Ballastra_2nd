@@ -1,190 +1,175 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, FlatList, Image, Dimensions } from 'react-native';
-import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
-const TEMP_AVATAR = 'https://i.pravatar.cc/150?img=12';
-
-const TABS = ['Members', 'Media', 'Pins', 'Links', 'Files'];
-
-const members = Array.from({ length: 12 }).map((_, i) => ({
-  id: String(i + 1),
-  name: '!?SUll_Notashish15',
-  avatar: TEMP_AVATAR,
+const MEMBERS = Array.from({ length: 10 }).map((_, i) => ({
+  id: String(i),
+  name: "! 7SUII_Notashish15",
+  avatar: "https://i.pravatar.cc/100?img=32",
 }));
 
-export default function MemberScreen() {
-  const renderMember = ({ item }) => (
-    <TouchableOpacity style={styles.memberCard} activeOpacity={0.8}>
-      <View style={styles.memberLeft}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        <View style={{ marginLeft: 12 }}>
-          <Text numberOfLines={1} style={styles.memberName}>{item.name}</Text>
-          <Text numberOfLines={1} style={styles.memberSubtitle}>Active • Online</Text>
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={22} color="#A9C0FF" />
-    </TouchableOpacity>
-  );
-
+export default function ChannelMembersScreen({ navigation }) {
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <StatusBar barStyle="light-content" backgroundColor="#060B1E" />
 
+      {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="chevron-back" size={26} color="#CFE1FF" />
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={22} color="#C7D2FF" />
         </TouchableOpacity>
 
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconBtn}><Feather name="search" size={18} color="#CFE1FF" /></TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}><Ionicons name="notifications-outline" size={18} color="#CFE1FF" /></TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}><Feather name="users" size={18} color="#CFE1FF" /></TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}><Feather name="settings" size={18} color="#CFE1FF" /></TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <View style={styles.channelRow}>
+            <View style={styles.hashBox}>
+              <Text style={styles.hashText}>#</Text>
+            </View>
+            <Text style={styles.channelName}>Media</Text>
+          </View>
+          <Text style={styles.subText}>&lt; media &gt;</Text>
+        </View>
+
+        <View style={styles.iconRow}>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ padding: 6 }}>
+            <Ionicons name="search" size={18} color="#E5EDFF" />
+          </TouchableOpacity>
+          <Ionicons name="notifications-outline" size={18} color="#E5EDFF" />
+          <Ionicons name="people-outline" size={18} color="#E5EDFF" />
+          <Ionicons name="settings-outline" size={18} color="#E5EDFF" />
         </View>
       </View>
 
-      <View style={styles.centerProfile}>
-        <View style={styles.hashtagBox}>
-          <Text style={styles.hashText}>#</Text>
-        </View>
-        <Text style={styles.channelText}>&lt; media, &gt;</Text>
-      </View>
+      {/* MEMBERS */}
+      <Text style={styles.membersTitle}>Members</Text>
 
-      <View style={styles.tabRow}>
-        {TABS.map((t, idx) => (
-          <TouchableOpacity key={t} style={[styles.tabItem, idx === 0 && styles.tabActive]}>
-            <Text style={[styles.tabText, idx === 0 && styles.tabTextActive]}>{t}</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 16 }}
+      >
+        {MEMBERS.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={styles.card}
+            onPress={() => navigation.navigate("Header_media_memeberprofile")}
+            activeOpacity={0.85}
+          >
+            <View style={styles.leftRow}>
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+              <Text style={styles.name}>{item.name}</Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={18} color="#C7D2FF" />
           </TouchableOpacity>
         ))}
-      </View>
-
-      <FlatList
-        data={members}
-        keyExtractor={(i) => i.id}
-        renderItem={renderMember}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
-
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#07112a',
+    backgroundColor: "#060B1E",
     paddingHorizontal: 16,
   },
+
+  /* HEADER */
   header: {
-    marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: Platform.OS === "ios" ? 6 : 10,
+    marginBottom: 14,
   },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  backBtn: {
+    width: 36,
+    alignItems: "flex-start",
   },
-  iconBtn: {
-    marginLeft: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+  headerCenter: {
+    flex: 1,
+    alignItems: "center",
+  },
+  channelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  hashBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(169,192,255,0.06)'
-  },
-  centerProfile: {
-    alignItems: 'center',
-    marginTop: 18,
-    marginBottom: 6,
-  },
-  hashtagBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(169,192,255,0.14)',
-    backgroundColor: 'rgba(13,25,52,0.25)'
+    borderColor: "#3B82F6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 6,
   },
   hashText: {
-    color: '#86A6FF',
-    fontSize: 26,
-    fontWeight: '700',
+    color: "#E5EDFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
-  channelText: {
-    marginTop: 8,
-    color: '#CFE1FF',
-    fontSize: 13,
-    opacity: 0.9,
+  channelName: {
+    color: "#E5EDFF",
+    fontSize: 15,
+    fontWeight: "600",
   },
-  tabRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 14,
-    paddingHorizontal: 6,
+  subText: {
+    color: "#9FB2FF",
+    fontSize: 11,
+    marginTop: 2,
   },
-  tabItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+  iconRow: {
+    flexDirection: "row",
+    gap: 14,
   },
-  tabText: {
-    color: '#9FB6FF',
-    fontSize: 13,
-  },
-  tabActive: {
-    backgroundColor: 'rgba(138,162,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(138,162,255,0.18)'
-  },
-  tabTextActive: {
-    color: '#DFF0FF',
-    fontWeight: '600'
-  },
-  listContent: {
-    paddingVertical: 18,
-    paddingBottom: 60,
-  },
-  memberCard: {
-    backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1,
-    borderColor: 'rgba(86,122,255,0.09)',
-    padding: 12,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+
+  /* MEMBERS */
+  membersTitle: {
+    color: "#E5EDFF",
+    fontSize: 15,
+    fontWeight: "600",
     marginBottom: 12,
   },
-  memberLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    maxWidth: width - 120,
+
+  /* CARD */
+  card: {
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#3B82F6",
+    backgroundColor: "#070E2A",
+    paddingHorizontal: 14,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  leftRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)'
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 10,
   },
-  memberName: {
-    color: '#E8F3FF',
-    fontSize: 15,
-    fontWeight: '600',
-    maxWidth: width - 180,
+  name: {
+    color: "#E5EDFF",
+    fontSize: 14,
+    fontWeight: "500",
   },
-  memberSubtitle: {
-    color: '#9FB6FF',
-    fontSize: 12,
-    marginTop: 2,
-  }
 });

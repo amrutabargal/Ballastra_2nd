@@ -89,6 +89,13 @@ import Call_friends_invites from '../screens/Call_friends_invites';
 import Member_Setting from '../screens/Member_Setting';
 import Voice_Setting from '../screens/Voice_Setting';
 import Vedio_Setting from '../screens/Vedio_Setting';
+import Name_Click_Settings from '../screens/Name_Click_Settings';
+import New_Share from '../screens/New_Share';
+import CreateBlipsScreen from '../screens/CreateBlipsScreen';
+import Header_media_memeberprofile from '../screens/Header_media_memeberprofile';
+import HEaderMediachat from '../screens/HEaderMediachat';
+import Scanershare from '../screens/Scanershare';
+import SearchScreen from '../screens/Search';
 /* Footer Component */
 import Footer from '../components/Footer';
 
@@ -135,6 +142,7 @@ export default function RootNavigator() {
       <Stack.Screen name="My_Own_Nexus" component={My_Own_Nexus} />
       <Stack.Screen name="Build_Your_Nexus" component={Build_Your_Nexus} />
       <Stack.Screen name="Share_Profile" component={Share_Profile} />
+      <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen
         name="Press_Space_Creation_Flow"
         component={Press_Space_Creation_Flow}
@@ -213,7 +221,10 @@ export default function RootNavigator() {
       <Stack.Screen name="VoiceCall" component={VoiceCallScreen} />
       <Stack.Screen name="VideoCall" component={VideoCallScreen} />
       <Stack.Screen name="IncomingCall" component={IncomingCallScreen} />
-
+      <Stack.Screen name="Name_Click_Settings" component={Name_Click_Settings} />
+      <Stack.Screen name="Header_media_memeberprofile" component={Header_media_memeberprofile} />
+<Stack.Screen name="HEaderMediachat" component={HEaderMediachat} />
+<Stack.Screen name="Scanershare" component={Scanershare} />
       {/* Report detail screens */}
       <Stack.Screen
         name="Nudity_or_sexual_activity"
@@ -282,8 +293,8 @@ export default function RootNavigator() {
 <Stack.Screen name="Member_Setting" component={Member_Setting} />
 <Stack.Screen name="Voice_Setting" component={Voice_Setting} />
 <Stack.Screen name="Vedio_Setting" component={Vedio_Setting} />
-
-
+<Stack.Screen name="New_Share" component={New_Share} />
+<Stack.Screen name="CreateBlipsScreen" component={CreateBlipsScreen} />
 
 
 

@@ -13,12 +13,10 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../config';
 
 const { width } = Dimensions.get("window");
 
-const API_BASE_URL = `${BASE_URL}/nexus`;
+const API_BASE_URL = "http://192.168.1.5:3000/api/nexus";
 
 export default function Nexus_Overview({ navigation, route }) {
   const nexusId = route?.params?.nexusId;
@@ -59,14 +57,8 @@ export default function Nexus_Overview({ navigation, route }) {
 
     try {
       setDeleting(true);
-      const token = await AsyncStorage.getItem('token');
 
-      const res = await fetch(`${API_BASE_URL}/${nexusId}`, {
-        method: "DELETE",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const res = await fetch(`${API_BASE_URL}/${nexusId}`, { method: "DELETE" });
       const json = await res.json();
 
       if (!json.success) {

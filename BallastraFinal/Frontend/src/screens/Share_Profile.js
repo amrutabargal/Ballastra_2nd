@@ -12,8 +12,6 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../config';
 
 const CONTACTS = [
   { id: "1", name: "! 7 SUII _Notashish15", subtitle: "", color: "#f97373" },
@@ -40,43 +38,10 @@ export default function ShareNexusScreen({ navigation }) {
 
   const isSelected = (id) => selectedIds.includes(id);
 
-  // 🔥 If this screen was reached from the Build flow, create the Nexus on server
-  const handleClose = async () => {
-    try {
-      const name = route?.params?.name;
-      const icon = route?.params?.icon;
-      const image = route?.params?.image;
-
-      if (name) {
-        const token = await AsyncStorage.getItem('token');
-        const body = {
-          name,
-          type: 'Community',
-          icon: icon || null,
-          description: '',
-          is_public: true,
-        };
-
-        try {
-          await fetch(`${BASE_URL}/nexus`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify(body),
-          });
-        } catch (e) {
-          // ignore network error, continue navigation
-          console.log('create nexus error', e);
-        }
-      }
-
-      if (navigation && navigation.navigate) {
-        navigation.navigate('CommunityDetails');
-      }
-    } catch (e) {
-      if (navigation && navigation.navigate) navigation.navigate('CommunityDetails');
+  // 🔥 इथे तुझा मागणीप्रमाणे direct navigate
+  const handleClose = () => {
+    if (navigation && navigation.navigate) {
+      navigation.navigate("CommunityDetails");
     }
   };
 

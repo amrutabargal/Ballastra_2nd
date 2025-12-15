@@ -21,11 +21,8 @@ import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../config';
-
-// use BASE_URL configured in app
-const API_BASE_URL = `${BASE_URL}/nexus`;
+// 🔗 BACKEND BASE URL – इथे बदल
+const API_BASE_URL = "http://192.168.1.5:5000/api";
 
 const VERIFICATION_OPTIONS = [
   { id: "none", label: "None", desc: "Unrestricted" },
@@ -171,13 +168,12 @@ export default function InvitesScreen({ navigation, route }) {
     try {
       setInviteGenerating(true);
 
-      const token = await AsyncStorage.getItem('token');
-
       const res = await fetch(`${API_BASE_URL}/invites/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // इथे Auth token असेल तर:
+          // Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           nexusId,
@@ -220,13 +216,11 @@ export default function InvitesScreen({ navigation, route }) {
     try {
       setInviteAccepting(true);
 
-      const token = await AsyncStorage.getItem('token');
-
       const res = await fetch(`${API_BASE_URL}/invites/accept`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ code }),
       });

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
@@ -73,7 +72,7 @@ export default function HomeScreen({ navigation }) {
       try {
         setLoading(true);
 
-        const res = await fetch(`${BASE_URL}/nexus/public`);
+        const res = await fetch(`${BASE_URL}/api/nexus/public`);
 
         const json = await res.json();
 
@@ -116,7 +115,7 @@ export default function HomeScreen({ navigation }) {
         const token = await AsyncStorage.getItem("token");
         if (!token) return; // not logged in
 
-        const res = await fetch(`${BASE_URL}/nexus/my`, {
+        const res = await fetch(`${BASE_URL}/api/nexus/my`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

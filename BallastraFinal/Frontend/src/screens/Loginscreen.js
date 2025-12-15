@@ -111,7 +111,7 @@ export default function LoginScreen({ navigation }) {
         [
           {
             text: "OK",
-            onPress: () => navigation.navigate("ResetPasswordScreen", { email }),
+            onPress: () => navigation.navigate("ResetPasswordScreen"), // ✅ Changed here
           },
         ]
       );
