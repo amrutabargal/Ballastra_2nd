@@ -1,0 +1,20 @@
+# Root .gitignore for BallastraFinal
+
+# Node dependencies (general)
+node_modules/
+
+# Ignore env files
+.env
+.env.*
+
+# Ignore IDE/editor artifacts
+.DS_Store
+/.vscode
+
+# Backend-specific ignores
+/Backend/node_modules/
+/Backend/.env
+/Backend/.env*
+
+# Frontend-specific (kept lightweight here; Frontend already has its own .gitignore)
+/Frontend/node_modules/
