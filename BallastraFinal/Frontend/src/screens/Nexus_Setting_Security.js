@@ -1,4 +1,4 @@
-// screens/SecurityScreen.js
+
 import React, { useState } from "react";
 import {
   View,
@@ -113,15 +113,10 @@ export default function SecurityScreen({ navigation }) {
 
             {/* Helper */}
             <Text style={styles.helper}>
-              We'll send a verification code to this number. You'll need it for
-              the next step.
+            A verification code will be sent to this number for the next step. Your phone number adds an extra layer of security to your account and helps people who already have your number find and connect with you. You can control how your phone number is used at any time. Lean more.
             </Text>
 
-            <Text style={[styles.helper, styles.helperMuted]}>
-              Your phone number helps us keep your account secure by adding an
-              additional layer of verification.{" "}
-              <Text style={styles.linkText}>Learn more</Text>
-            </Text>
+          
 
             <View style={{ flex: 1 }} />
 
@@ -180,7 +175,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   label: {
-    color: "#9aa3d2",
+    color: "#ffffff",
     fontSize: moderateScale(13),
     marginBottom: verticalScale(10),
   },
@@ -203,7 +198,7 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(15),
   },
   helper: {
-    color: "rgba(255,255,255,0.42)",
+    color: "#ffffff",
     fontSize: moderateScale(12),
     lineHeight: moderateScale(18),
     marginTop: verticalScale(6),
@@ -213,7 +208,7 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(8),
   },
   linkText: {
-    color: "#A7C0FF",
+    color: "#ffffff",
     textDecorationLine: "underline",
   },
   verifyTouch: {
@@ -228,7 +223,7 @@ const styles = StyleSheet.create({
   },
   verifyButton: {
     paddingVertical: verticalScale(14),
-    borderRadius: moderateScale(28),
+    borderRadius: 15,
     alignItems: "center",
   },
   verifyText: {

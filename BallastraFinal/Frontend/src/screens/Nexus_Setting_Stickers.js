@@ -369,9 +369,10 @@ export default function StickersScreen({ navigation }) {
 
           <View style={styles.instructionsCard}>
             <Text style={styles.instructionsText}>
-              Stickers can be static (jpg, png) or animated (png, GIF). Stickers must
-              be exactly 320x320 pixels and no larger than 1mb. Static images will be
-              resized/compressed automatically if 'expo-image-manipulator' is installed.
+             Stickers can be static (jpg, png) or animated (png, GIF). Stickers must be exactly 320x320 pixels and no larger than 1mb. we will automatically resize static. jpg, png and animated GIF Stickers for you.
+            </Text>
+            <Text style={styles.instructionsText}>
+              For more information about file types and tips on uploading custom stickers, check out this Help Center article.
             </Text>
           </View>
         </View>

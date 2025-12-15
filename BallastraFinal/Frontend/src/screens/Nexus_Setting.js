@@ -106,7 +106,7 @@ export default function NexusSettingsScreen({ navigation }) {
           ])}
 
           {renderSection("tools", "Tools", [
-            { icon: "document-text-outline", label: "AuditLog", onPress: () => navigation.navigate("AuditLog") },
+            { icon: "document-text-outline", label: "Activity_History", onPress: () => navigation.navigate("Activity_History") },
             { icon: "gift-outline", label: "Integrations", onPress: () => {} },
             { icon: "lock-closed-outline", label: "Security", onPress: () => navigation.navigate("Nexus_Setting_Security") },
           ])}
