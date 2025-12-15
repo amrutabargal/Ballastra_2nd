@@ -16,6 +16,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
@@ -244,7 +245,7 @@ export default function InvitesScreen({ navigation, route }) {
   // --------------------------------------------------------- //
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <StatusBar hidden />
 
       <ScrollView
@@ -287,9 +288,7 @@ export default function InvitesScreen({ navigation, route }) {
           </TouchableOpacity>
 
           <Text style={styles.pillDesc}>
-            Members of the nexus must meet the following criteria before they
-            can send messages in text Space or initiate a direct message
-            conversation.
+            Members must meet the required criteria to send messages in Text Spaces or start direct messages. This rule does not apply to members with assigned roles if Nexus onboarding is disabled. We recommend enabling a verification level for the Community Nexus. Lean more.
           </Text>
 
           {verifyExpanded && (
@@ -354,9 +353,7 @@ export default function InvitesScreen({ navigation, route }) {
           </TouchableOpacity>
 
           <Text style={styles.pillDesc}>
-            Choose if nexus members can share image-based media detected by
-            Ballastra sensitive content filters. This setting will apply to
-            Space that are not age-restricted.
+           Select whether Nexus members are allowed to share image-based media flagged by Ballastra’s sensitive content filters. This setting applies only to Spaces that are not age-restricted. Lean more.
           </Text>
 
           {sensitiveExpanded && (
@@ -465,94 +462,23 @@ export default function InvitesScreen({ navigation, route }) {
           <View style={styles.switchCard}>
             <View style={{ flex: 1 }}>
               <Text style={styles.switchTitle}>Age-Restricted Nexus</Text>
-              <Text style={styles.switchDesc}>
-                Users will need to confirm they are over the legal age to view
-                the content in this nexus.
-              </Text>
+              
             </View>
+            
             <Switch
               value={ageRestricted}
               onValueChange={setAgeRestricted}
                trackColor={{ false: "#1E293B", true: "#4479FF" }}
               thumbColor="#fff"
             />
-          </View>
+
+          </View><Text style={styles.pillDesc}>
+                Users will need to confirm they are over the legal age to view
+                the content in this nexus.
+              </Text>
         </View>
 
-        {/* 🔥 INVITE UI SECTION */}
-        <View style={{ marginTop: 24 }}>
-          <Text style={styles.sectionHeader}>Invite Links</Text>
-
-          {/* Generate Invite Card */}
-          <View style={styles.inviteCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inviteTitle}>Generate invite</Text>
-              <Text style={styles.inviteDesc}>
-                Create a shareable invite code for this nexus. Code will expire
-                after 24 hours by default.
-              </Text>
-
-              {inviteInfo?.code && (
-                <View style={styles.inviteInfoBox}>
-                  <Text style={styles.inviteInfoLabel}>
-                    Current invite code
-                  </Text>
-                  <Text style={styles.inviteInfoCode}>{inviteInfo.code}</Text>
-                  {inviteInfo.expiresAt && (
-                    <Text style={styles.inviteInfoExpiry}>
-                      Expires at:{" "}
-                      {new Date(inviteInfo.expiresAt).toLocaleString()}
-                    </Text>
-                  )}
-                </View>
-              )}
-            </View>
-
-            <TouchableOpacity
-              style={styles.inviteButton}
-              activeOpacity={0.8}
-              onPress={handleGenerateInvite}
-              disabled={inviteGenerating}
-            >
-              <Text style={styles.inviteButtonText}>
-                {inviteGenerating ? "Generating..." : "Generate"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Accept Invite Card */}
-          <View style={[styles.inviteCard, { marginTop: 14 }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inviteTitle}>Join with invite code</Text>
-              <Text style={styles.inviteDesc}>
-                Have a code? Enter it here to accept an invite and join the
-                nexus.
-              </Text>
-
-              <View style={styles.inviteInputWrapper}>
-                <TextInput
-                  style={styles.inviteInput}
-                  placeholder="Enter invite code"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={inviteCodeInput}
-                  onChangeText={setInviteCodeInput}
-                  autoCapitalize="none"
-                />
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={[styles.inviteButton, { marginTop: 10 }]}
-              activeOpacity={0.8}
-              onPress={handleAcceptInvite}
-              disabled={inviteAccepting}
-            >
-              <Text style={styles.inviteButtonText}>
-                {inviteAccepting ? "Joining..." : "Accept Invite"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -631,7 +557,7 @@ export default function InvitesScreen({ navigation, route }) {
           </View>
         </Pressable>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
