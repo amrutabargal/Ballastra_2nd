@@ -13,6 +13,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
@@ -45,19 +46,8 @@ export default function SpaceSettingsScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
-      {/* Fake status bar row */}
-      <View style={styles.fakeStatusBar}>
-        <Text style={styles.timeText}>9:41</Text>
-        <View style={styles.fakeStatusIcons}>
-          <Ionicons name="cellular" size={16} color="#ffffff" style={styles.fakeIcon} />
-          <Ionicons name="wifi" size={16} color="#ffffff" style={styles.fakeIcon} />
-          <Ionicons name="battery-full" size={20} color="#ffffff" style={styles.fakeIcon} />
-        </View>
-      </View>
-input
+    <SafeAreaView style={styles.container}>
+      
       {/* Header */}
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
@@ -130,7 +120,7 @@ input
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

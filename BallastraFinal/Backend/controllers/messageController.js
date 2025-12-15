@@ -2,12 +2,14 @@
 import * as messageModel from "../models/messageModel.js";
 import * as reactionModel from "../models/reactionModel.js";
 import * as orbitModel from "../models/orbitModel.js";
+import * as chatModel from "../models/chatModel.js";
 
 /* create message via REST (used when client wants REST fallback) */
 export async function sendMessageHandler(req, res, next) {
   try {
     const userId = req.user.id;
     const { chatId } = req.params;
+    const { body = "", attachments = [] } = req.body;
     // if chat is direct (type direct) and recipient known, check mutual
     const chat = await chatModel.getChatById(chatId);
     if (chat.type === "direct") {
@@ -18,7 +20,9 @@ export async function sendMessageHandler(req, res, next) {
       const mutual = await orbitModel.isMutual(userId, other.user_id);
       if (!mutual) return res.status(403).json({ success:false, message: "Both users must follow each other to send messages" });
     }
-    // create message...
+    // create message
+    const message = await messageModel.createMessage({ chat_id: chatId, user_id: userId, body, attachments });
+    res.json({ success:true, data: message });
   } catch (err) { next(err); }
 }
 

@@ -12,6 +12,19 @@ export async function getChatById(chatId) {
   return rows[0];
 }
 
+export async function findDirectChatBetween(userA, userB) {
+  const q = `
+    SELECT c.* FROM chats c
+    JOIN chat_members cm ON cm.chat_id = c.id
+    WHERE c.type = 'direct' AND cm.user_id = ANY($1::int[])
+    GROUP BY c.id
+    HAVING COUNT(DISTINCT cm.user_id) = 2
+    LIMIT 1
+  `;
+  const { rows } = await pool.query(q, [[userA, userB]]);
+  return rows[0];
+}
+
 export async function listUserChats(userId, limit = 50, offset = 0) {
   const q = `
     SELECT c.*, cm.role, cm.joined_at, coalesce(m.body, '') as last_message, m.created_at as last_message_at

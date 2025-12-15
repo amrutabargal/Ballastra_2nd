@@ -136,19 +136,23 @@ export async function forgotPassword(req, res, next) {
     if (!email) return res.status(400).json({ success:false, message:'email required' });
     const user = await getUserByEmail(email);
     if (!user) return res.status(404).json({ success:false, message:'user not found' });
+    // generate a secure token and store it as a password-reset purpose
+    const token = crypto.randomBytes(32).toString('hex');
+    // token valid for 60 minutes
+    await createOtp({ user_id: user.id, code: token, purpose: 'password_reset', ttlMinutes: 60 });
 
-    const code = (Math.floor(100000 + Math.random()*900000)).toString(); // 6-digit OTP
-    await createOtp({ user_id: user.id, code, purpose: 'forgot_password', ttlMinutes: 15 });
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetLink = `${frontendUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
 
-    // send email (adjust content)
+    // send email containing the reset link
     await sendEmail({
       to: user.email,
-      subject: "Your password reset code",
-      text: `Your OTP is ${code}. Expires in 15 minutes.`,
-      html: `<p>Your OTP is <b>${code}</b>. It expires in 15 minutes.</p>`
+      subject: "Password reset link",
+      text: `Click the link to reset your password: ${resetLink}`,
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 60 minutes.</p><p>If the link does not work, copy and paste this token into the app: <code>${token}</code></p>`
     });
 
-    res.json({ success:true, message:'OTP sent to email' });
+    res.json({ success:true, message:'Password reset link sent to email' });
   } catch (err) { next(err); }
 }
 
@@ -172,22 +176,20 @@ export async function verifyOtp(req, res, next) {
 
 export async function resetPassword(req, res, next) {
   try {
-    const { email, code, newPassword } = req.body;
-    if (!email || !code || !newPassword) return res.status(400).json({ success:false, message:'email, code, newPassword required' });
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ success:false, message:'token and newPassword required' });
 
-    const user = await getUserByEmail(email);
-    if (!user) return res.status(404).json({ success:false, message:'user not found' });
+    // find the password_reset token (we allow lookup by code alone)
+    const otp = await findValidOtp({ code: token, purpose: 'password_reset' });
+    if (!otp) return res.status(400).json({ success:false, message:'invalid or expired token' });
 
-    const otp = await findValidOtp({ user_id: user.id, code, purpose: 'forgot_password' });
-    if (!otp) return res.status(400).json({ success:false, message:'invalid or expired OTP' });
-
-    // mark used
+    // mark token used
     await markOtpUsed(otp.id);
 
-    // update password
+    // update password for the associated user
     const saltRounds = 10;
     const hash = await bcrypt.hash(newPassword, saltRounds);
-    await pool.query('UPDATE users SET password=$1 WHERE id=$2', [hash, user.id]);
+    await pool.query('UPDATE users SET password=$1 WHERE id=$2', [hash, otp.user_id]);
 
     res.json({ success:true, message:'Password reset successful' });
   } catch (err) { next(err); }

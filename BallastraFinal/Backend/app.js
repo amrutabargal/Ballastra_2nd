@@ -18,7 +18,10 @@ import adminRoutes from './routes/adminRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
 import orbitRoutes from "./routes/orbitRoutes.js";
 import callRoutes from "./routes/callRoutes.js";
-
+import chatRoutes from "./routes/chatRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
+import { initSocket } from './socket/socket.js';
+import http from 'http';
 
 
 dotenv.config();
@@ -45,9 +48,17 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/activity', activityRoutes);
 app.use("/api/orbit", orbitRoutes);
 app.use("/api/call", callRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/messages", messageRoutes);
 
-//const PORT = process.env.PORT || ;
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-app.listen(3000, "0.0.0.0", () => {
-  console.log("Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+// create http server and attach socket.io
+const server = http.createServer(app);
+
+// initialize socket.io and pass CORS origin from env (if set)
+initSocket(server, { corsOrigin: process.env.FRONTEND_URL || '*' });
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });

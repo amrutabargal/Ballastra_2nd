@@ -10,6 +10,17 @@ export async function createChatHandler(req, res, next) {
     const { name = null, type = "direct", members = [], metadata = {} } = req.body;
     const created_by = req.user.id;
 
+    // If this is a direct chat between two users, try to find existing one
+    if (type === 'direct' && Array.isArray(members) && members.length === 1) {
+      const otherId = members[0];
+      const existing = await chatModel.findDirectChatBetween(created_by, otherId);
+      if (existing) {
+        // ensure caller is a member (add if missing)
+        await chatModel.addMember(existing.id, created_by, 'member');
+        return res.json({ success: true, data: existing });
+      }
+    }
+
     const chat = await chatModel.createChat({ name, type, created_by, metadata });
 
     // add creator as owner

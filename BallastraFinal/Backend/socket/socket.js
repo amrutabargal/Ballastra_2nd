@@ -1,10 +1,10 @@
 // Backend/socket.js
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import * as messageModel from "./models/messageModel.js";
-import * as reactionModel from "./models/reactionModel.js";
-import * as chatModel from "./models/chatModel.js";
-import * as userModel from "./models/userModel.js"; // for presence last_seen
+import * as messageModel from "../models/messageModel.js";
+import * as reactionModel from "../models/reactionModel.js";
+import * as chatModel from "../models/chatModel.js";
+import * as userModel from "../models/userModel.js"; // for presence last_seen
 
 // track online users
 const onlineUsers = new Map();  // userId -> socketId
