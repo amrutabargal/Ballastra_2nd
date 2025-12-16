@@ -96,6 +96,7 @@ import Header_media_memeberprofile from '../screens/Header_media_memeberprofile'
 import HEaderMediachat from '../screens/HEaderMediachat';
 import Scanershare from '../screens/Scanershare';
 import SearchScreen from '../screens/Search';
+import GoogleLogin from '../screens/GoogleLogin';
 /* Footer Component */
 import Footer from '../components/Footer';
 
@@ -295,6 +296,7 @@ export default function RootNavigator() {
 <Stack.Screen name="Vedio_Setting" component={Vedio_Setting} />
 <Stack.Screen name="New_Share" component={New_Share} />
 <Stack.Screen name="CreateBlipsScreen" component={CreateBlipsScreen} />
+<Stack.Screen name="GoogleLogin" component={GoogleLogin} />
 
 
 
