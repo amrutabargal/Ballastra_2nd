@@ -192,7 +192,7 @@ export default function HomeScreen({ navigation }) {
         style={styles.cardWrapper}
         activeOpacity={0.8}
         onPress={() =>
-          navigation?.navigate("Channel", { communityId: item.id })
+          navigation?.navigate("", { communityId: item.id })
         }
       >
         <ImageBackground
@@ -217,7 +217,7 @@ export default function HomeScreen({ navigation }) {
               <TouchableOpacity
                 style={styles.peopleBtn}
                 onPress={() =>
-                  navigation.navigate("", {
+                  navigation.navigate("Nexuschat", {
                     communityId: item.id,
                     name: item.name,
                   })
