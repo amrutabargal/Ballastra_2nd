@@ -39,9 +39,7 @@ export default function ReportProblemScreen({ navigation }) {
           <Text style={styles.title}>Which best describes this problem?</Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
+            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           {/* Options */}

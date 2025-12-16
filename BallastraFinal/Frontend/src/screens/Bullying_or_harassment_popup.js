@@ -1,5 +1,4 @@
 
-// src/screens/Bullying_or_harassment_popup.js
 import React from "react";
 import {
   View,
@@ -79,10 +78,7 @@ export default function Bullying_or_harassment_popup({ navigation, route }) {
           </Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
-          </Text>
+Send recent messages to Ballastra for review. For immediate danger, contact emergency services.          </Text>
 
           <View style={styles.divider} />
 
@@ -91,15 +87,15 @@ export default function Bullying_or_harassment_popup({ navigation, route }) {
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Messages that target private individuals to degrade or shame them.
-            </Text>
+
+
+Messages targeting individuals to humiliate or shame them.            </Text>
           </View>
 
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Messages that contain personal information shared to harass or
-              blackmail people.
+              Messages sharing personal info to harass or blackmail.
             </Text>
           </View>
         </ScrollView>
@@ -230,6 +226,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     paddingVertical: 14,
     alignItems: "center",
+    height:52,
+    width:341,
     justifyContent: "center",
     backgroundColor: "#3F70FF",
   },

@@ -55,8 +55,7 @@ export default function ReportSpamScreen({ navigation }) {
             <Text style={styles.title}>Spam</Text>
 
             <Text style={styles.description}>
-              Send recent messages from this conversation to ballastra for
-              review.
+              Send recent messages to Ballastra for review.
             </Text>
 
             <Text style={styles.subtitle}>We take action if we find :-</Text>
@@ -64,23 +63,20 @@ export default function ReportSpamScreen({ navigation }) {
             <View style={styles.bulletRow}>
               <View style={styles.bulletDot} />
               <Text style={styles.bulletText}>
-                Buying, selling or giving away accounts, roles or permissions.
+Buying, selling or giving away accounts, roles or permissions.              </Text>
+            </View>
+
+            <View style={styles.bulletRow}>
+              <View style={styles.bulletDot} />
+              <Text style={styles.bulletText}>
+                Encouraging engagement through false pretenses.
               </Text>
             </View>
 
             <View style={styles.bulletRow}>
               <View style={styles.bulletDot} />
               <Text style={styles.bulletText}>
-                Encouraging people to engage with content under false
-                pretenses.
-              </Text>
-            </View>
-
-            <View style={styles.bulletRow}>
-              <View style={styles.bulletDot} />
-              <Text style={styles.bulletText}>
-                Directing people away from ballastra through the misleading use
-                of links.
+               Misleading links that direct people away from Ballastra..
               </Text>
             </View>
           </ScrollView>

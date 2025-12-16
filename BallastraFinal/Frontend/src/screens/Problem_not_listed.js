@@ -47,18 +47,15 @@ export default function ReportScreen({ navigation }) {
           <Text style={styles.heading}>Everyone deserves to feel safe</Text>
 
           <Text style={styles.subText}>
-            If you can’t see your problem listed, you can still report the
-            chat.
+            If your issue isn’t listed, you can still report the chat.
           </Text>
 
           <Text style={styles.bulletText}>
-            • We’ll use automation or a review team to check recent messages for
-            anything not allowed on Ballastra.
+            • We’ll use automation or reviewers to check recent messages for rule violations.
           </Text>
 
           <Text style={styles.bulletText}>
-            • If you or someone that you know is in immediate danger, call local
-            emergency services. Don’t wait.
+            • If someone is in immediate danger, call emergency services immediately.
           </Text>
         </View>
 

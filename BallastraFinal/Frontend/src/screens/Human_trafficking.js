@@ -67,9 +67,7 @@ export default function ReportHumanTraffickingScreen({ navigation }) {
           <Text style={styles.sectionTitle}>Human trafficking</Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
+           Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           <View style={styles.divider} />
@@ -79,8 +77,7 @@ export default function ReportHumanTraffickingScreen({ navigation }) {
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Messages arranging for someone to work illegally in another
-              country.
+              Messages arranging illegal work in another country.
             </Text>
           </View>
 
@@ -94,8 +91,7 @@ export default function ReportHumanTraffickingScreen({ navigation }) {
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Messages selling or offering the sexual services of another
-              person.
+             Messages selling or offering someone else’s sexual services
             </Text>
           </View>
         </ScrollView>

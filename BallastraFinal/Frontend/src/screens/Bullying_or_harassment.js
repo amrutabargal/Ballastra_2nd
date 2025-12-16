@@ -1,5 +1,4 @@
 
-// src/screens/Bullying_or_harassment.js
 import React from "react";
 import {
   View,
@@ -13,21 +12,25 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Bullying_or_harassment({ navigation, route }) {
+export default function Bullying_or_harassment_popup({ navigation, route }) {
   const message = route?.params?.message;
   const reason = route?.params?.reason;
+  const selected = route?.params?.selected; // Me / Someone I know / Someone else
 
   const handleBack = () => {
     navigation?.goBack && navigation.goBack();
   };
 
-  const handleSelect = (value) => {
-    navigation?.navigate &&
-      navigation.navigate("Bullying_or_harassment_popup", {
-        selected: value,
-        message,
-        reason,
-      });
+  const handleSubmit = () => {
+    // Here you can send report to backend if needed
+    console.log("Submit bullying/harassment report:", {
+      message,
+      reason,
+      selected,
+    });
+
+    // Navigate to Done screen
+    navigation.navigate("Done", { reportType: "Bullying & Harassment" });
   };
 
   return (
@@ -71,48 +74,42 @@ export default function Bullying_or_harassment({ navigation, route }) {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.sectionTitle}>
-            Who is being bullied or harassed?
+            Bullying and harassment guidelines
           </Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
+            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           <View style={styles.divider} />
 
-          <TouchableOpacity
-            style={styles.row}
-            activeOpacity={0.8}
-            onPress={() => handleSelect("Me")}
-          >
-            <Text style={styles.rowText}>Me</Text>
-            <Ionicons name="chevron-forward" size={18} color="#C5CAD6" />
-          </TouchableOpacity>
-          <View style={styles.rowDivider} />
+          <Text style={styles.subHeading}>We take action if we find :-</Text>
 
-          <TouchableOpacity
-            style={styles.row}
-            activeOpacity={0.8}
-            onPress={() => handleSelect("Someone I know")}
-          >
-            <Text style={styles.rowText}>Someone I know</Text>
-            <Ionicons name="chevron-forward" size={18} color="#C5CAD6" />
-          </TouchableOpacity>
-          <View style={styles.rowDivider} />
+          <View style={styles.bulletRow}>
+            <Text style={styles.bulletDot}>•</Text>
+            <Text style={styles.bulletText}>
+              Messages that target private individuals to degrade or shame them.
+            </Text>
+          </View>
 
-          <TouchableOpacity
-            style={styles.row}
-            activeOpacity={0.8}
-            onPress={() => handleSelect("Someone else")}
-          >
-            <Text style={styles.rowText}>Someone else</Text>
-            <Ionicons name="chevron-forward" size={18} color="#C5CAD6" />
-          </TouchableOpacity>
-
-          <View style={styles.bottomDivider} />
+          <View style={styles.bulletRow}>
+            <Text style={styles.bulletDot}>•</Text>
+            <Text style={styles.bulletText}>
+              Messages that contain personal information shared to harass or
+              blackmail people.
+            </Text>
+          </View>
         </ScrollView>
+
+        <View style={styles.bottomArea}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={styles.submitButton}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.submitText}>Submit report</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -197,25 +194,45 @@ const styles = StyleSheet.create({
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: "#2B3550",
-    marginBottom: 4,
+    marginBottom: 16,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-  },
-  rowText: {
-    flex: 1,
+  subHeading: {
     fontSize: 14,
+    fontWeight: "600",
+    color: "#C5CAD6",
+    marginBottom: 10,
+  },
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  bulletDot: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    marginRight: 8,
+    marginTop: 1,
+  },
+  bulletText: {
+    flex: 1,
     color: "#E1E5F0",
+    fontSize: 14,
+    lineHeight: 20,
   },
-  rowDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#2B3550",
+  bottomArea: {
+    paddingHorizontal: 24,
+    paddingTop: 4,
   },
-  bottomDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#2B3550",
-    marginTop: 2,
+  submitButton: {
+    borderRadius: 30,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#3F70FF",
+  },
+  submitText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
 });

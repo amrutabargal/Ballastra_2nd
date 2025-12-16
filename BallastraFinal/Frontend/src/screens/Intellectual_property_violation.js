@@ -49,8 +49,7 @@ export default function ReportIPGuidelinesScreen({ navigation }) {
             </Text>
 
             <Text style={styles.description}>
-              Send recent messages from this conversation to ballastra for
-              review.
+             Send recent messages to Ballastra for review.
             </Text>
 
             <Text style={styles.subtitle}>
@@ -67,19 +66,14 @@ export default function ReportIPGuidelinesScreen({ navigation }) {
             <View style={styles.bulletRow}>
               <View style={styles.bulletDot} />
               <Text style={styles.bulletText}>
-                If someone is using your photos without your permission or
-                impersonating you. We only review feedback sent to us from the
-                person who’s being impersonated or a representative of that
-                person.
+                Report if someone uses your photos or impersonates you. Only the person or their representative can submit feedback.
               </Text>
             </View>
 
             <View style={styles.bulletRow}>
               <View style={styles.bulletDot} />
               <Text style={styles.bulletText}>
-                Laws in different countries may vary. Visit our Help Centre to
-                learn more about giving feedback on an intellectual property
-                violation.
+                Laws vary by country. Visit our Help Centre to learn about reporting intellectual property violations.
               </Text>
             </View>
           </ScrollView>
