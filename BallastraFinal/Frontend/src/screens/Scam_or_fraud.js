@@ -5,16 +5,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from "@expo/vector-icons";
 
 const BULLETS = [
-  "Buying, selling or trading fake reviews, passwords, personal data, counterfeit currency or exam materials.",
+  "Trading fake reviews, passwords, personal data, fake currency, or exam materials.",
   "Fixing matches or bets.",
-  "Running fake businesses or misleading schemes to take people's money or belongings.",
+  "Running fake businesses or scams to take people’s money or belongings.",
 ];
 
 export default function Scam_or_fraud({ navigation, route }) {
@@ -38,7 +38,7 @@ export default function Scam_or_fraud({ navigation, route }) {
       <Pressable style={styles.overlay} onPress={() => navigation.goBack()} />
 
       {/* main card */}
-      <SafeAreaView style={styles.sheet}>
+      <SafeAreaView style={styles.sheet} edges={["bottom"]}>
         {/* handle bar */}
         <View style={styles.handle} />
 
@@ -62,8 +62,7 @@ export default function Scam_or_fraud({ navigation, route }) {
         {/* title + subtitle */}
         <Text style={styles.title}>Scam and fraud guidelines</Text>
         <Text style={styles.subtitle}>
-          Send recent messages from this conversation to ballastra for review.
-          If someone is in immediate danger, call the local emergency services.
+           Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
         </Text>
 
         {/* middle divider */}

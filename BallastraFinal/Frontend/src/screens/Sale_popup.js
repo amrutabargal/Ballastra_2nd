@@ -73,9 +73,7 @@ export default function SalePopup({ navigation }) {
           </Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
+            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           <View style={styles.divider} />
@@ -87,8 +85,7 @@ export default function SalePopup({ navigation }) {
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Promoting the use of high-risk drugs, such as cocaine, heroin or
-              fentanyl.
+              Promoting high-risk drugs like cocaine, heroin, or fentanyl.
             </Text>
           </View>
 
@@ -102,8 +99,7 @@ export default function SalePopup({ navigation }) {
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Selling or trading guns, ammunition, explosives, live animals or
-              animal parts between people.
+              Direct threats of harm, theft, vandalism, or financial loss.
             </Text>
           </View>
         </ScrollView>

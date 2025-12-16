@@ -91,9 +91,7 @@ export default function ReportIllegalGoodsScreen({ navigation }) {
           <Text style={styles.sectionTitle}>What is being sold or promoted?</Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
+            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           <View style={styles.divider} />

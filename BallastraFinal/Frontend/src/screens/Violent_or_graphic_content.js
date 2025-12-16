@@ -5,10 +5,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
@@ -20,7 +20,7 @@ export default function ReportViolentContent({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor="#071A3D" />
 
       <View style={styles.overlay}>
@@ -45,9 +45,7 @@ export default function ReportViolentContent({ navigation }) {
           <Text style={styles.title}>Violent or graphic content</Text>
 
           <Text style={styles.desc}>
-            Send recent messages from this conversation to ballastra for
-            review. If someone is in immediate danger, call the local emergency
-            services.
+            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           <Text style={styles.subTitle}>
@@ -56,8 +54,9 @@ export default function ReportViolentContent({ navigation }) {
 
           <View style={styles.bulletWrapper}>
             <Text style={styles.bulletText}>
-              • Photos or videos showing throat-slitting, cannibalism or
-              internal organs.
+              
+
+Photos or videos showing extreme gore like throat-slitting, cannibalism, or internal organs.
             </Text>
           </View>
         </View>

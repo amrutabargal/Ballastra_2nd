@@ -71,9 +71,7 @@ export default function ReportOrganizedCrimeScreen({ navigation }) {
           <Text style={styles.sectionTitle}>Organized crime</Text>
 
           <Text style={styles.description}>
-            Send recent messages from this conversation to ballastra for review.
-            If someone is in immediate danger, call the local emergency
-            services.
+            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
           </Text>
 
           <View style={styles.divider} />
@@ -83,16 +81,14 @@ export default function ReportOrganizedCrimeScreen({ navigation }) {
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Messages that encourage violence or attacks on anyone based on
-              their religious, ethnic or sexual background.
+             Messages promoting violence or attacks based on religion, ethnicity, or sexuality.
             </Text>
           </View>
 
           <View style={styles.bulletRow}>
             <Text style={styles.bulletDot}>•</Text>
             <Text style={styles.bulletText}>
-              Specific threats of physical harm, theft, vandalism or financial
-              harm.
+              Direct threats of harm, theft, vandalism, or financial loss.
             </Text>
           </View>
         </ScrollView>

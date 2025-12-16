@@ -48,9 +48,7 @@ export default function ReportUnlawfulScreen() {
         <Text style={styles.title}>What type of unlawful content?</Text>
 
         <Text style={styles.description}>
-          You can report this chat to ballastra if you think that it goes
-          against our Community Standards. We won’t notify the account that you
-          submitted this report.
+          If this chat violates our Community Standards, you can report it to Ballastra. The account won’t be notified.
         </Text>
 
         {/* ---------- Options ---------- */}
