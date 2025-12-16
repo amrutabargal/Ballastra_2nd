@@ -217,7 +217,7 @@ export default function HomeScreen({ navigation }) {
               <TouchableOpacity
                 style={styles.peopleBtn}
                 onPress={() =>
-                  navigation.navigate("Nexuschat", {
+                  navigation.navigate("", {
                     communityId: item.id,
                     name: item.name,
                   })
