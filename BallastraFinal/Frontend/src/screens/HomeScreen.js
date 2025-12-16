@@ -1,3 +1,5 @@
+
+
 import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
@@ -6,6 +8,7 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Image,
   ImageBackground,
   StatusBar,
   Alert,
@@ -65,6 +68,8 @@ export default function HomeScreen({ navigation }) {
   // 🔥 NEW: backend मधून येणारा डेटा इथे ठेवतो
   const [communities, setCommunities] = useState(COMMUNITIES);
   const [loading, setLoading] = useState(false);
+  // blips horizontal stories/profile chips
+  const [blips, setBlips] = useState([]);
 
   // 🔥 NEW: getPublicNexus API call
   useEffect(() => {
@@ -187,7 +192,7 @@ export default function HomeScreen({ navigation }) {
         style={styles.cardWrapper}
         activeOpacity={0.8}
         onPress={() =>
-          navigation?.navigate("Channel", { communityId: item.id })
+          navigation?.navigate("", { communityId: item.id })
         }
       >
         <ImageBackground
@@ -266,11 +271,61 @@ export default function HomeScreen({ navigation }) {
 
         {/* RIGHT CONTENT AREA */}
         <View style={styles.contentArea}>
-          {/* Add Blips Card */}
-          <View style={styles.addBlipCard}>
-            <Icon name="plus" size={32} color="#fff" />
-            <Text style={styles.addBlipText}>Add Blips</Text>
-          </View>
+          <FlatList
+                      data={[{ type: "add" }, ...blips]}
+                      horizontal
+                      keyExtractor={(item, index) => item.id ?? "add-" + index}
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{
+                        paddingVertical: 0,
+                        paddingBottom: 0,
+                      }}
+                      style={{ marginBottom: 0 }}
+                      renderItem={({ item }) => {
+                        if (item.type === "add") {
+                          return (
+                            <TouchableOpacity
+                              style={styles.addBlipCardHorizontal}
+                              activeOpacity={0.8}
+                              onPress={() =>
+                                setBlips((prev) => [
+                                  ...prev,
+                                  { id: Date.now().toString(), type: "profile" },
+                                ])
+                              }
+                            >
+                              <Icon name="plus" size={32} color="#fff" />
+                              <Text style={styles.addBlipText}>Add Blips</Text>
+                            </TouchableOpacity>
+                          );
+                        }
+          
+                        return (
+                          <View style={styles.profileBlipCardHorizontal}>
+                            <ImageBackground
+                              source={{
+                                uri: "https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg",
+                              }}
+                              style={styles.profileImageHorizontal}
+                              imageStyle={{ borderRadius: 15 }}
+                            >
+                              <View style={styles.gradientBorder}>
+                                <View style={styles.avatarCircle}>
+                                  <Image
+                                    source={{
+                                      uri:
+                                        "https://i.pinimg.com/originals/aa/65/17/aa6517fdbae9df4d51ed245b16bc18f4.png",
+                                    }}
+                                    style={styles.avatarImg}
+                                  />
+                                </View>
+                                <Text style={styles.blipName}>Bloxd</Text>
+                              </View>
+                            </ImageBackground>
+                          </View>
+                        );
+                      }}
+                    />
 
           {/* Explore Container */}
           <View style={styles.exploreContainer}>
@@ -309,25 +364,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Bottom Tab Bar */}
-      <View style={styles.bottomTabBar}>
-        <TouchableOpacity style={styles.tabItem}>
-          <Icon name="home" size={22} color="#3b82f6" />
-          <Text style={[styles.tabLabel, styles.tabLabelActive]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <Icon name="message-circle" size={22} color="#64748b" />
-          <Text style={styles.tabLabel}>Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <Icon name="bell" size={22} color="#64748b" />
-          <Text style={styles.tabLabel}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <Icon name="user" size={22} color="#64748b" />
-          <Text style={styles.tabLabel}>You</Text>
-        </TouchableOpacity>
-      </View>
+    
     </View>
   );
 }
@@ -372,25 +409,65 @@ const styles = StyleSheet.create({
   contentArea: {
     flex: 1,
   },
-  // Add Blips Card
-  addBlipCard: {
+ 
+  /* ---------- BLIPS ---------- */
+  addBlipCardHorizontal: {
     width: 70,
     height: 102,
     borderRadius: 15,
     backgroundColor: "#1a2332",
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: "#3154BA4D",
     borderStyle: "dashed",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginRight: 12,
   },
-  addBlipText: {
+
+  profileBlipCardHorizontal: {
+    width: 70,
+    height: 102,
+    borderRadius: 15,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "#09E6FF",
+    marginRight: 12,
+  },
+
+  profileImageHorizontal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  gradientBorder: {
+    width: "85%",
+    height: "85%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  avatarCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderColor: "#3B82F6",
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+
+  avatarImg: {
+    width: "100%",
+    height: "100%",
+  },
+
+  blipName: {
     color: "#fff",
-    fontSize: 8,
-    fontWeight: "500",
-    marginTop: 12,
+    fontSize: 14,
+    fontWeight: "700",
   },
+
   // Explore Container
   exploreContainer: {
     flex: 1,
@@ -398,6 +475,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
     padding: 21,
+    marginTop: -600,
   },
   exploreTitle: {
     color: "#ffff",

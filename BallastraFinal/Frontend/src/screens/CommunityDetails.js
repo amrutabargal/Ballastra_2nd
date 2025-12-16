@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   mainArea: {
     flex: 1,
     marginLeft: 68,
-    marginTop: 70,
+    marginTop: 20,
     marginRight: 12,
     backgroundColor: '#0b1733',
   },

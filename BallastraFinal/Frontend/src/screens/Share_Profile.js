@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Svg, { Path, G } from "react-native-svg";
 
 import {
-  SafeAreaView,
   View,
   Text,
   TouchableOpacity,
@@ -12,6 +11,7 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const CONTACTS = [
   { id: "1", name: "! 7 SUII _Notashish15", subtitle: "", color: "#f97373" },
@@ -50,7 +50,7 @@ export default function ShareNexusScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <View style={styles.screen}>
         {/* ⭐ HEADER ROW (close + title) */}
@@ -227,7 +227,7 @@ export default function ShareNexusScreen({ navigation }) {
 
         {/* Send Button */}
         {selectedIds.length > 0 && (
-          <TouchableOpacity style={styles.sendButton}>
+          <TouchableOpacity style={styles.sendButton} onPress={sendInvites} activeOpacity={0.8} accessibilityRole="button">
             <Text style={styles.sendButtonText}>
               Send ({selectedIds.length})
             </Text>

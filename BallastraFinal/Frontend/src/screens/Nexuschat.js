@@ -1387,7 +1387,7 @@
 // });
 
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { 
   View, 
   Text, 
@@ -1399,6 +1399,7 @@ import {
   Image, 
   ImageBackground 
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -1423,9 +1424,19 @@ export default function NexusChat({ route, navigation }) {
   const members = route?.params?.members || 14879;
   const [chatOpen, setChatOpen] = useState(true);
   const [voiceOpen, setVoiceOpen] = useState(true);
+  const routeAvatar = route?.params?.avatar;
+  const routeJoined = route?.params?.joined;
+  const sideAvatars = useMemo(() => {
+    const arr = [...SIDE_AVATARS];
+    // only show the navigated community on the left if the user has joined it
+    if (routeAvatar && routeJoined) {
+      arr.unshift({ id: `r-${Date.now()}`, avatar: routeAvatar, color: "#22c55e", badge: 0 });
+    }
+    return arr;
+  }, [routeAvatar, routeJoined]);
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" />
       
       {/* CONTENT + SIDEBAR */}
@@ -1451,7 +1462,7 @@ export default function NexusChat({ route, navigation }) {
             style={styles.sideAvatarScroll}
             contentContainerStyle={{ paddingBottom: scale(16) }}
           >
-            {SIDE_AVATARS.map((item) => (
+            {sideAvatars.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 style={styles.sideAvatarWrapper}
@@ -1652,7 +1663,7 @@ export default function NexusChat({ route, navigation }) {
           </TouchableOpacity>
         </LinearGradient>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
