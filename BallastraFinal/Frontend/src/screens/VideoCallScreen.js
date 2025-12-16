@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Image,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function CallScreen() {
@@ -16,7 +16,7 @@ export default function CallScreen() {
   const [speakerOn, setSpeakerOn] = useState(true);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       {/* ---------- TOP BAR ---------- */}
       <View style={styles.topBar}>
         <View style={styles.leftTop}>
