@@ -72,13 +72,13 @@ const styles = StyleSheet.create({
 
   /* ✅ Clean Back Button Style */
   backButton: {
-    width: 40,
-    height: 40,
+    width: 22,
+    height: 22,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 80,
-    marginTop:20,
+    marginBottom: 48,
+    marginTop:40,
   },
 
   title: {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   subtitle: {
     color: '#BDBDBD',
     marginTop: 5,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     lineHeight: 20,
     textAlign: "center",
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    height:52,
+    height:44,
     borderWidth: 1,
   borderColor: "#3154BA",
 
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
 
   optionText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 10,
     marginLeft: 15,
     fontWeight: '500',
   },
@@ -138,6 +138,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: "center",
     fontWeight: '500',
-    marginTop: 20,
   },
 });

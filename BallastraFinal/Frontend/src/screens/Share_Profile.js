@@ -8,10 +8,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+    Image, // ✅ ADD THIS LINE
   ScrollView,
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+
+const getRandomAvatar = (seed) =>
+  `https://i.pravatar.cc/150?img=${seed}`;
 
 const CONTACTS = [
   { id: "1", name: "! 7 SUII _Notashish15", subtitle: "", color: "#f97373" },
@@ -70,9 +75,12 @@ export default function ShareNexusScreen({ navigation }) {
 
           {/* Avatar */}
           <View style={styles.avatarWrapper}>
-            <View style={styles.avatarOuter}>
-              <View style={styles.avatarInner} />
-            </View>
+          <View style={styles.avatarOuter}>
+  <Image
+    source={{ uri: getRandomAvatar(7) }}
+    style={styles.avatarInner}
+  />
+</View>
           </View>
 
           <Text style={styles.avatarName}>Shusshi Clean</Text>
@@ -164,16 +172,30 @@ export default function ShareNexusScreen({ navigation }) {
           </View>
 
           {/* Search */}
-          <View style={styles.searchContainer}>
-            <TextInput
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search"
-              placeholderTextColor="#64748b"
-              style={styles.searchInput}
-            />
-          </View>
-        </View>
+         <View style={styles.searchContainer}>
+  <View style={styles.searchInputWrapper}>
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M21 21L16.65 16.65M18 11C18 14.866 14.866 18 11 18C7.13401 18 4 14.866 4 11C4 7.13401 7.13401 4 11 4C14.866 4 18 7.13401 18 11Z"
+        stroke="#64748b"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+
+    <TextInput
+      value={search}
+      onChangeText={setSearch}
+      placeholder="Search"
+      placeholderTextColor="#64748b"
+      style={styles.searchInput}
+    />
+  </View>
+    </View>
+
+</View>
+
 
         {/* List Card */}
         <View style={styles.listCard}>
@@ -185,13 +207,16 @@ export default function ShareNexusScreen({ navigation }) {
                 activeOpacity={0.8}
                 onPress={() => toggleSelect(item.id)}
               >
-                <View
-                  style={[styles.contactAvatar, { backgroundColor: item.color }]}
-                >
-                  <Text style={styles.contactAvatarText}>
-                    {item.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+               <View
+  style={[styles.contactAvatar, { backgroundColor: item.color }]}
+>
+  <Image
+    source={{ uri: getRandomAvatar(item.id * 10) }}
+    style={styles.contactImage}
+  />
+</View>
+
+
 
                 <View style={styles.contactTextWrapper}>
                   <Text style={styles.contactName} numberOfLines={1}>
@@ -240,9 +265,9 @@ export default function ShareNexusScreen({ navigation }) {
 
 /* ====================== STYLES ====================== */
 
-const BG = "#0C142A";
-const CARD = "#0C142A";
-const BORDER = "#1f2937";
+const BG = "#0A0E1A";
+const CARD = "#0A0E1A";
+const BORDER = "#0A0E1A";
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: BG },
@@ -255,20 +280,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  topHeaderRow: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    marginBottom: 12,
-    marginTop: 8,
-  },
+
+  contactImage: {
+  width: 42,
+  height: 42,
+  borderRadius: 21,
+},
+
+
+ topHeaderRow: {
+  width: "100%",
+  flexDirection: "row",
+  alignItems: "center",
+  position: "relative",
+  marginBottom: 12,
+},
+
+
 
   closeButton: {
     position: "absolute",
     left: 18,
-    top: 0,
+    top: 5,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -276,22 +309,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  closeText: { color: "#e5e7eb", fontSize: 18 },
+  closeText: { color: "#ffff", fontSize: 14, 
+      fontWeight: "500",
 
-  shareTitle: {
-    color: "#e5e7eb",
-    fontSize: 16,
-    fontWeight: "500",
-    textAlign: "center",
-    flex: 1,
-  },
+   },
+
+ shareTitle: {
+  color: "#e5e7eb",
+  fontSize: 16,
+  fontWeight: "500",
+  textAlign: "center",
+  flex: 1,
+        paddingTop: 10,
+
+},
+
 
   avatarWrapper: { marginTop: 4, marginBottom: 8 },
   avatarOuter: {
     width: 84,
     height: 84,
-    borderRadius: 42,
-    backgroundColor: "#22c55e",
+    borderRadius: 45,
+    // backgroundColor: "#22c55e",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -318,19 +357,39 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
+      borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#3154BA",
+    
   },
 
   shareIconText: { color: "#e5e7eb", fontSize: 14, fontWeight: "600" },
 
   searchContainer: { width: "88%", marginTop: 6, marginBottom: 10 },
 
+
+  searchInputWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#020617",
+  borderRadius: 999,
+  borderWidth: 1,
+  borderColor: "#3154BA",
+  paddingHorizontal: 14,
+},
+
+searchInput: {
+  flex: 1,
+  color: "#e5e7eb",
+  fontSize: 13,
+},
+
+
   searchInput: {
-    height: 40,
     borderRadius: 999,
     paddingHorizontal: 16,
     backgroundColor: "#020617",
     borderWidth: 1,
-    borderColor: BORDER,
     color: "#e5e7eb",
     fontSize: 13,
   },
@@ -374,9 +433,9 @@ const styles = StyleSheet.create({
   sendPill: {
     minWidth: 64,
     height: 26,
-    borderRadius: 13,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: "#3154BA",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 10,
