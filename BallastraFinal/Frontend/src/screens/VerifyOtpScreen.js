@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import {
   View,
@@ -47,13 +48,17 @@ export default function V4({ navigation }) {
       <StatusBar hidden />
 
       {/* ❌ Close */}
-      <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.closeBtn}
+        onPress={() => navigation.goBack()}
+      >
         <Ionicons name="close" size={22} color="#fff" />
       </TouchableOpacity>
 
       {/* Content */}
       <View style={styles.centerBox}>
         <Text style={styles.title}>Verifications</Text>
+
         <Text style={styles.subTitle}>
           Check your Email and enter the verification code.
         </Text>
@@ -77,7 +82,7 @@ export default function V4({ navigation }) {
         <TouchableOpacity>
           <Text style={styles.resend}>
             If you don’t receive a code ?{" "}
-            <Text style={{ color: "#4F6EF7" }}>Resend</Text>
+            <Text style={styles.resendLink}>Resend</Text>
           </Text>
         </TouchableOpacity>
 
@@ -101,13 +106,13 @@ const styles = StyleSheet.create({
 
   closeBtn: {
     position: "absolute",
-    top: 55,
+    top: 54,
     left: 20,
     zIndex: 10,
   },
 
   centerBox: {
-    marginTop: height * 0.28,
+    marginTop: height * 0.30, // 🔥 image-match spacing
     alignItems: "center",
   },
 
@@ -115,25 +120,26 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "500",
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   subTitle: {
     color: "#8A94B8",
     fontSize: 12,
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 28, // 🔥 more breathing space
+    lineHeight: 16,
   },
 
   codeRow: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 18,
+    gap: 14, // 🔥 even spacing between boxes
+    marginBottom: 22,
   },
 
   codeBox: {
-    width: 44,
-    height: 44,
+    width: 46,
+    height: 46,
     borderRadius: 12,
     backgroundColor: "#142048",
     borderWidth: 1,
@@ -145,12 +151,17 @@ const styles = StyleSheet.create({
   resend: {
     color: "#8A94B8",
     fontSize: 11,
-    marginBottom: 14,
+    marginBottom: 12,
+  },
+
+  resendLink: {
+    color: "#4F6EF7",
   },
 
   loading: {
     color: "#8A94B8",
     fontSize: 11,
+    marginTop: 4,
   },
 
   nextBtn: {
@@ -158,8 +169,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#3255BA",
     borderRadius: 15,
     paddingVertical: 12,
-    paddingHorizontal: 42,
-    marginBottom: 110,
+    paddingHorizontal: 44,
+    marginBottom: 90,
+    marginTop:10,
+
   },
 
   nextText: {
