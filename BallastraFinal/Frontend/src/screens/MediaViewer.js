@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -6,6 +7,7 @@ import {
   StatusBar,
   Dimensions,
   ScrollView,
+  FlatList,
   Image,
   TouchableOpacity,
   TextInput,
@@ -15,9 +17,14 @@ import {
   Animated,
   KeyboardAvoidingView,
   Keyboard,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Feather from "react-native-vector-icons/Feather";
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const guidelineBaseWidth = 375;
@@ -104,6 +111,17 @@ export default function ChatScreen({ route, navigation }) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingTimerRef = useRef(null);
+  const [emojiVisible, setEmojiVisible] = useState(false);
+  const [actionsVisible, setActionsVisible] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [emojiSearch, setEmojiSearch] = useState('');
+  const EMOJI_LIST = [
+    { e: '😀', n: 'grinning' },{ e: '😂', n: 'joy' },{ e: '😍', n: 'heart_eyes' },{ e: '👍', n: 'thumbs_up' },{ e: '🎉', n: 'tada' },{ e: '😮', n: 'open_mouth' },{ e: '😢', n: 'cry' },{ e: '🔥', n: 'fire' },{ e: '🙏', n: 'pray' },{ e: '🤝', n: 'handshake' },{ e: '😅', n: 'sweat_smile' },{ e: '🤩', n: 'star_struck' },{ e: '😉', n: 'wink' },{ e: '😎', n: 'sunglasses' },{ e: '👏', n: 'clap' },{ e: '🤔', n: 'thinking' }
+  ];
 
   // Scroll to bottom when new message
   useEffect(() => {
@@ -254,6 +272,132 @@ export default function ChatScreen({ route, navigation }) {
     Keyboard.dismiss();
   };
 
+  // Normalize permission result shapes
+  const grantedFrom = (res) => {
+    if (!res) return false;
+    if (typeof res === 'object') return !!(res.granted || res.granted === true || res.status === 'granted');
+    return res === true;
+  };
+
+  const openImagePicker = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync?.();
+      if (!grantedFrom(perm)) return;
+
+      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+      if (res.cancelled) return;
+
+      setUploading(true);
+      const newPost = {
+        id: Date.now().toString(),
+        type: 'post',
+        author: 'You',
+        avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=200',
+        time: 'Just now',
+        text: inputValue || '',
+        media: res.uri,
+        likes: 0,
+        replies: [],
+      };
+
+      setMessages(prev => [...prev, newPost]);
+      setInputValue('');
+      setUploading(false);
+    } catch (e) {
+      setUploading(false);
+    }
+  };
+
+  const takePhoto = async () => {
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync?.();
+      if (!grantedFrom(perm)) return;
+
+      const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+      if (res.cancelled) return;
+
+      const newPost = {
+        id: Date.now().toString(),
+        type: 'post',
+        author: 'You',
+        avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=200',
+        time: 'Just now',
+        text: inputValue || '',
+        media: res.uri,
+        likes: 0,
+        replies: [],
+      };
+
+      setMessages(prev => [...prev, newPost]);
+      setInputValue('');
+    } catch (e) {}
+  };
+
+  const pickDocument = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({});
+      if (res.type !== 'success') return;
+
+      const newMessage = {
+        id: Date.now().toString(),
+        type: 'message',
+        author: 'You',
+        avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=200',
+        time: 'Just now',
+        text: `File: ${res.name}`,
+        file: res.uri,
+      };
+
+      setMessages(prev => [...prev, newMessage]);
+    } catch (e) {}
+  };
+
+  const toggleEmoji = () => setEmojiVisible(v => !v);
+  const openActions = () => setActionsVisible(true);
+  const closeActions = () => setActionsVisible(false);
+
+  // Keyboard listeners to avoid overlap
+  useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates ? e.endCoordinates.height : (e.end && e.end.height) || 300);
+    });
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Search functions
+  const openSearch = () => setSearchVisible(true);
+  const closeSearch = () => { setSearchVisible(false); setSearchQuery(''); setSearchResults([]); };
+
+  const handleSearch = (q) => {
+    setSearchQuery(q);
+    const term = q.trim().toLowerCase();
+    if (!term) { setSearchResults([]); return; }
+
+    const results = messages.filter(m => {
+      if ((m.text || '').toLowerCase().includes(term)) return true;
+      if ((m.author || '').toLowerCase().includes(term)) return true;
+      if ((m.replies || []).some(r => (r.text || '').toLowerCase().includes(term))) return true;
+      if ((m.file || '').toLowerCase().includes(term)) return true;
+      return false;
+    });
+
+    setSearchResults(results);
+  };
+
+  const jumpToMessage = (msg) => {
+    if (!positionsRef.current[msg.id] || !scrollViewRef.current) return;
+    const y = positionsRef.current[msg.id].y || 0;
+    scrollViewRef.current.scrollTo({ y: Math.max(0, y - 20), animated: true });
+    closeSearch();
+  };
+
   const startRecording = () => {
     setIsRecording(true);
     setRecordingTime(0);
@@ -331,11 +475,12 @@ export default function ChatScreen({ route, navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-    >
+    <SafeAreaView style={styles.root}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      >
       <StatusBar barStyle="light-content" />
 
       <View style={styles.header}>
@@ -351,10 +496,17 @@ export default function ChatScreen({ route, navigation }) {
           <Text style={styles.channelLabel}>{channel}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.searchBtn}>
+        <TouchableOpacity style={styles.searchBtn} onPress={openSearch}>
           <Feather name="search" size={18} color="#ffffff" />
         </TouchableOpacity>
       </View>
+
+      {uploading ? (
+        <View style={styles.uploadOverlay} pointerEvents="none">
+          <ActivityIndicator size="large" color="#9fb4ff" />
+          <Text style={styles.uploadText}>Uploading...</Text>
+        </View>
+      ) : null}
 
       {/* Messages */}
       <ScrollView
@@ -561,15 +713,15 @@ export default function ChatScreen({ route, navigation }) {
       )}
 
       {/* Input bar */}
-      <View style={styles.inputBarContainer}>
+      <View style={[styles.inputBarContainer, { bottom: Platform.OS === 'ios' ? (keyboardHeight ? keyboardHeight : scale(18)) : (keyboardHeight ? keyboardHeight : scale(12)) }]}>
         <View style={styles.inputBar}>
           {/* left quick icons */}
           <View style={styles.leftIcons}>
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-              <Feather name="image" size={18} color="#9fb4ff" />
+            <TouchableOpacity style={styles.plusBtn} onPress={openActions}>
+              <Ionicons name="add" size={18} color="#9fb4ff" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={toggleEmoji}>
               <Feather name="smile" size={18} color="#9fb4ff" />
             </TouchableOpacity>
           </View>
@@ -588,9 +740,7 @@ export default function ChatScreen({ route, navigation }) {
               onSubmitEditing={sendMessage}
             />
 
-            <TouchableOpacity style={styles.plusBtn}>
-              <Ionicons name="add" size={18} color="#9fb4ff" />
-            </TouchableOpacity>
+            
           </View>
 
           {/* right area: mic OR send */}
@@ -631,6 +781,106 @@ export default function ChatScreen({ route, navigation }) {
       </View>
 
       {/* Modal Menu */}
+      {/* Actions modal (upload / take / file) */}
+      <Modal
+        visible={actionsVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={closeActions}
+      >
+        <TouchableWithoutFeedback onPress={closeActions}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={[styles.sheetWrapper, { paddingBottom: 24 }]}>
+                <View style={styles.sheetHandle} />
+
+                <ScrollView style={styles.menuList} contentContainerStyle={{ paddingBottom: 24 }}>
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => { closeActions(); openImagePicker(); }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.menuIcon}>
+                      <Feather name="image" size={18} color="#9fb4ff" />
+                    </View>
+                    <Text style={styles.menuLabel}>Upload Image</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => { closeActions(); takePhoto(); }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.menuIcon}>
+                      <Feather name="camera" size={18} color="#9fb4ff" />
+                    </View>
+                    <Text style={styles.menuLabel}>Take Photo</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => { closeActions(); pickDocument(); }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.menuIcon}>
+                      <Feather name="file" size={18} color="#9fb4ff" />
+                    </View>
+                    <Text style={styles.menuLabel}>Upload File</Text>
+                  </TouchableOpacity>
+
+                  <View style={{ height: 8 }} />
+
+                  <TouchableOpacity style={styles.reportBtn} onPress={closeActions} activeOpacity={0.7}>
+                    <View style={styles.reportIcon}>
+                      <Feather name="x" size={18} color="#ff6b6b" />
+                    </View>
+                    <Text style={styles.reportLabel}>Cancel</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Emoji picker modal */}
+      <Modal
+        visible={emojiVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setEmojiVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setEmojiVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={[styles.sheetWrapper, { maxHeight: 240, paddingBottom: 12 }]}>
+                <View style={styles.sheetHandle} />
+                <View style={{ paddingHorizontal: scale(12), paddingBottom: scale(8) }}>
+                  <TextInput
+                    placeholder="Search emoji (smile, joy...)"
+                    placeholderTextColor="#9aa4c8"
+                    value={emojiSearch}
+                    onChangeText={setEmojiSearch}
+                    style={[styles.inputNew, { backgroundColor: '#071022', borderRadius: scale(10), paddingHorizontal: scale(10) }]}
+                  />
+                </View>
+                <View style={styles.emojiGrid}>
+                  {EMOJI_LIST.filter(it => !emojiSearch || it.n.includes(emojiSearch.toLowerCase()) || it.e === emojiSearch).map((it) => (
+                    <TouchableOpacity
+                      key={it.e}
+                      style={styles.emojiItem}
+                      onPress={() => { setInputValue(v => v + it.e); setEmojiVisible(false); }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{ fontSize: scale(22) }}>{it.e}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
       <Modal
         visible={menuVisible}
         animationType="fade"
@@ -700,7 +950,47 @@ export default function ChatScreen({ route, navigation }) {
           <Text style={styles.floatingToastText}>{toastText}</Text>
         </Animated.View>
       ) : null}
+
+      {/* Search modal */}
+      <Modal visible={searchVisible} animationType="fade" transparent onRequestClose={closeSearch}>
+        <TouchableWithoutFeedback onPress={closeSearch}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={[styles.sheetWrapper, { maxHeight: SCREEN_H * 0.6, paddingBottom: 12 }]}>
+                <View style={styles.sheetHandle} />
+                <View style={{ paddingHorizontal: scale(12), paddingBottom: scale(8) }}>
+                  <TextInput
+                    placeholder="Search messages, authors, files..."
+                    placeholderTextColor="#9aa4c8"
+                    value={searchQuery}
+                    onChangeText={handleSearch}
+                    style={[styles.inputNew, { backgroundColor: '#071022', borderRadius: scale(10), paddingHorizontal: scale(10) }]}
+                  />
+                </View>
+
+                <FlatList
+                  data={searchResults}
+                  keyExtractor={(it) => it.id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity style={styles.menuItem} onPress={() => jumpToMessage(item)}>
+                      <View style={styles.menuIcon}><Image source={{ uri: item.avatar }} style={{ width: scale(36), height: scale(36), borderRadius: scale(18) }} /></View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.menuLabel}>{item.author} · {item.time}</Text>
+                        <Text style={{ color: '#cbd5f5', marginTop: scale(6) }} numberOfLines={2}>{item.text || item.file || item.media || ''}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                  ListEmptyComponent={() => (
+                    <View style={{ padding: scale(16), alignItems: 'center' }}><Text style={{ color: '#9fb4ff' }}>No results</Text></View>
+                  )}
+                />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -1091,5 +1381,37 @@ const styles = StyleSheet.create({
     color: "#dbeafe",
     marginLeft: scale(8),
     fontWeight: "600",
+  },
+  emojiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: scale(8),
+    paddingVertical: scale(12),
+    justifyContent: 'flex-start',
+  },
+  emojiItem: {
+    width: scale(44),
+    height: scale(44),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: scale(10),
+    margin: scale(6),
+    backgroundColor: 'transparent',
+  },
+  uploadOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(2,6,23,0.6)',
+    zIndex: 999,
+  },
+  uploadText: {
+    color: '#dbeafe',
+    marginTop: scale(12),
+    fontWeight: '700',
   },
 });

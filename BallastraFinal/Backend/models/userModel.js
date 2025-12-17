@@ -3,22 +3,32 @@ import pool from "../config/db.js";
 // Find user by email
 export const findUserByEmail = async (email) => {
   const result = await pool.query(
-    "SELECT * FROM users WHERE email = $1",
+    "SELECT * FROM users WHERE email = $1 AND is_verified = true",
     [email]
   );
   return result.rows[0];
 };
 
-// Create normal user
-export const createUser = async (name, email, password, avatar_url) => {
-  const result = await pool.query(
-    `INSERT INTO users (name, email, password, avatar_url)
-     VALUES ($1, $2, $3, $4) RETURNING *`,
-    [name, email, password, avatar_url]
+export const createUser = async (data) => {
+  const { username, name, email, password, avatar_url, is_verified } = data;
+
+  const { rows } = await pool.query(
+    `INSERT INTO users (username, name, email, password, avatar_url, is_verified)
+     VALUES ($1,$2,$3,$4,$5,$6)
+     RETURNING id, username, name, email, avatar_url, is_verified`,
+    [username, name, email, password, avatar_url, is_verified]
   );
-  return result.rows[0];
+
+  return rows[0];
 };
 
+export const findUserByUsername = async (username) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE username = $1 AND is_verified = true',
+    [username]
+  );
+  return rows[0];
+};
 /* ================= GOOGLE ================= */
 
 // Find user by Google ID
@@ -47,6 +57,13 @@ export const createUserWithGoogle = async (name, email, googleId, avatar_url) =>
     [name, email, googleId, avatar_url]
   );
   return result.rows[0];
+};
+
+export const markUserVerified = async (userId) => {
+  await pool.query(
+    'UPDATE users SET is_verified=true WHERE id=$1',
+    [userId]
+  );
 };
 
 /* ================= APPLE ================= */

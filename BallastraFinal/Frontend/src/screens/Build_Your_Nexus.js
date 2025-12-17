@@ -1,4 +1,8 @@
 
+
+
+
+
 import React, { useState } from "react";
 import {
   View,
@@ -72,7 +76,7 @@ export default function BuildNexusScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="Choose your nexus name"
-          placeholderTextColor="#6B7196"
+          placeholderTextColor="#BDBDBD"
           value={nexusName}
           onChangeText={setNexusName}
         />
@@ -134,9 +138,9 @@ export default function BuildNexusScreen({ navigation }) {
 const styles = StyleSheet.create({
  container: {
     flex: 1,
-    backgroundColor: '#020b22',
+    backgroundColor: '#0A0E1A',
     paddingHorizontal: 23,
-    paddingTop: 50,
+    paddingTop: 60,
   },  
   
   scrollContent: { flexGrow: 1, 
@@ -209,7 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 12, 
         fontWeight: "500", 
     borderWidth: 1, 
-    borderColor: "#030B2499",
+    borderColor: "#3154BA",
   },
 
   guideline: {
@@ -228,23 +232,25 @@ const styles = StyleSheet.create({
 
 
   createBtn: {
-  backgroundColor: "#2F4E9E",
   paddingVertical: 12,
-  paddingHorizontal: 30,
+  paddingHorizontal: 25,
   borderRadius: 14,
-  marginTop: 60,
+  marginTop: 180,
   shadowColor: "#030B2466",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.3,
   shadowRadius: 8,
-  alignSelf: "center",   
+  alignSelf: "center",
+  borderWidth: 1, 
+    borderColor: "#3154BA",   
 },
 
   createBtnDisabled: { opacity: 0.5 },
   createText: { 
     color: "#FFFFFF", textAlign: "center",
-     fontSize: 14, 
+     fontSize: 12, 
      fontWeight: "500" },
+     
   modalBg: {
     flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "center", alignItems: "center",
   },

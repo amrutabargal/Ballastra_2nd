@@ -1,4 +1,5 @@
 
+// src/screens/Bullying_or_harassment.js
 import React from "react";
 import {
   View,
@@ -12,25 +13,21 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Bullying_or_harassment_popup({ navigation, route }) {
+export default function Bullying_or_harassment({ navigation, route }) {
   const message = route?.params?.message;
   const reason = route?.params?.reason;
-  const selected = route?.params?.selected; // Me / Someone I know / Someone else
 
   const handleBack = () => {
     navigation?.goBack && navigation.goBack();
   };
 
-  const handleSubmit = () => {
-    // Here you can send report to backend if needed
-    console.log("Submit bullying/harassment report:", {
-      message,
-      reason,
-      selected,
-    });
-
-    // Navigate to Done screen
-    navigation.navigate("Done", { reportType: "Bullying & Harassment" });
+  const handleSelect = (value) => {
+    navigation?.navigate &&
+      navigation.navigate("Bullying_or_harassment_popup", {
+        selected: value,
+        message,
+        reason,
+      });
   };
 
   return (
@@ -74,42 +71,48 @@ export default function Bullying_or_harassment_popup({ navigation, route }) {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.sectionTitle}>
-            Bullying and harassment guidelines
+            Who is being bullied or harassed?
           </Text>
 
           <Text style={styles.description}>
-            Send recent messages to Ballastra for review. For immediate danger, contact emergency services.
+            Send recent messages from this conversation to ballastra for review.
+            If someone is in immediate danger, call the local emergency
+            services.
           </Text>
 
           <View style={styles.divider} />
 
-          <Text style={styles.subHeading}>We take action if we find :-</Text>
-
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>•</Text>
-            <Text style={styles.bulletText}>
-              Messages that target private individuals to degrade or shame them.
-            </Text>
-          </View>
-
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>•</Text>
-            <Text style={styles.bulletText}>
-              Messages that contain personal information shared to harass or
-              blackmail people.
-            </Text>
-          </View>
-        </ScrollView>
-
-        <View style={styles.bottomArea}>
           <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.submitButton}
-            onPress={handleSubmit}
+            style={styles.row}
+            activeOpacity={0.8}
+            onPress={() => handleSelect("Me")}
           >
-            <Text style={styles.submitText}>Submit report</Text>
+            <Text style={styles.rowText}>Me</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C5CAD6" />
           </TouchableOpacity>
-        </View>
+          <View style={styles.rowDivider} />
+
+          <TouchableOpacity
+            style={styles.row}
+            activeOpacity={0.8}
+            onPress={() => handleSelect("Someone I know")}
+          >
+            <Text style={styles.rowText}>Someone I know</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C5CAD6" />
+          </TouchableOpacity>
+          <View style={styles.rowDivider} />
+
+          <TouchableOpacity
+            style={styles.row}
+            activeOpacity={0.8}
+            onPress={() => handleSelect("Someone else")}
+          >
+            <Text style={styles.rowText}>Someone else</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C5CAD6" />
+          </TouchableOpacity>
+
+          <View style={styles.bottomDivider} />
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -194,45 +197,25 @@ const styles = StyleSheet.create({
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: "#2B3550",
-    marginBottom: 16,
+    marginBottom: 4,
   },
-  subHeading: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#C5CAD6",
-    marginBottom: 10,
-  },
-  bulletRow: {
+  row: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  bulletDot: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    marginRight: 8,
-    marginTop: 1,
-  },
-  bulletText: {
-    flex: 1,
-    color: "#E1E5F0",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  bottomArea: {
-    paddingHorizontal: 24,
-    paddingTop: 4,
-  },
-  submitButton: {
-    borderRadius: 30,
-    paddingVertical: 14,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#3F70FF",
+    paddingVertical: 14,
   },
-  submitText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FFFFFF",
+  rowText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#E1E5F0",
+  },
+  rowDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#2B3550",
+  },
+  bottomDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#2B3550",
+    marginTop: 2,
   },
 });

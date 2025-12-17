@@ -1,23 +1,23 @@
-// Backend/services/emailService.js
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+export const sendEmail = async ({ to, subject, text, html }) => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
 
-export async function sendEmail({ to, subject, text, html }) {
-  const info = await transporter.sendMail({
-    from: process.env.SMTP_FROM || `"No Reply" <${process.env.SMTP_USER}>`,
+  await transporter.sendMail({
+    from: `"Ballastra Security" <${process.env.SMTP_USER}>`,
     to,
     subject,
     text,
     html
+
+
   });
-  return info;
-}
+};

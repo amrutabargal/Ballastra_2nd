@@ -15,7 +15,7 @@ export default function Logoscreen({ navigation }) {
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx < -50) {
           // swipe left → go to v2
-          navigation.navigate('v2');
+          navigation.navigate('signin_up');
         }
       },
     })

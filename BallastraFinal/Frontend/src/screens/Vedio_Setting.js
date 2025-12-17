@@ -14,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 
-export default function VoiceSettingsScreen({ navigation }) {
+export default function VedioSettingsScreen({ navigation }) {
   const [autoSensitivity, setAutoSensitivity] = useState(true);
   const [echoCancel, setEchoCancel] = useState(true);
   const [autoVolume, setAutoVolume] = useState(true);

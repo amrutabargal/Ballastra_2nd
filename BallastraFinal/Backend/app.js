@@ -21,6 +21,7 @@ import callRoutes from "./routes/callRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import { initSocket } from './socket/socket.js';
+import { startCleanupJob } from './jobs/cleanupJob.js';
 import http from 'http';
 
 
@@ -58,6 +59,8 @@ const server = http.createServer(app);
 
 // initialize socket.io and pass CORS origin from env (if set)
 initSocket(server, { corsOrigin: process.env.FRONTEND_URL || '*' });
+
+startCleanupJob();
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);

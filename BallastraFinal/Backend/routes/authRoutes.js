@@ -1,24 +1,17 @@
 import express from 'express';
-import {
-    signup,
-    login,
-    appleLogin,
-    forgotPassword,
-    verifyOtp,
-    resetPassword
-} from '../controllers/authController.js';
+import { signup, login, appleLogin, forgotPassword, verifyOtp, resetPassword, verifySignupOtp } from '../controllers/authController.js';
+import { signupValidation, loginValidation, otpValidation, forgotPasswordValidation, resetPasswordValidation } from '../validators/authValidator.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = express.Router();
 
-//POST
-router.post('/signup', signup);
-router.post('/login', login);
-// Apple Sign-In
-router.post("/apple/signin", appleLogin);
-// alias to match frontend expectation: /apple-login
+router.post('/signup', signupValidation, validateRequest, signup);
+router.post('/verify-signup-otp', otpValidation, validateRequest, verifySignupOtp);
+router.post('/login', loginValidation, validateRequest, login);
+router.post('/apple/signin', appleLogin);
 router.post('/apple-login', appleLogin);
-router.post("/forgot-password", forgotPassword);
-router.post("/verify-otp", verifyOtp);
-router.post("/reset-password", resetPassword);
+router.post('/forgot-password', forgotPasswordValidation, validateRequest, forgotPassword);
+router.post('/verify-otp', otpValidation, validateRequest, verifyOtp);
+router.post('/reset-password', resetPasswordValidation, validateRequest, resetPassword);
 
 export default router;

@@ -1,11 +1,12 @@
 import bcrypt from 'bcryptjs';
-import pool from '../config/db.js'; 
+import pool from '../config/db.js';
 import jwt from 'jsonwebtoken';
 import crypto from "crypto";
 
 import {
   createUser,
   findUserByEmail,
+  findUserByUsername,
   findUserByAppleId,
   createUserWithApple,
   findUserByGoogleId,
@@ -19,23 +20,99 @@ import googleService from "../services/googleAuthService.js";
 import { sendEmail } from "../services/emailService.js";
 import { createOtp, findValidOtp, markOtpUsed } from "../models/otpModel.js";
 
-/* ================= SIGNUP ================= */
+/* ================= SIGNUP (STEP 1) ================= */
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, avatar_url } = req.body;
+    const { username, name, email, password, avatar_url } = req.body;
 
+    // email uniqueness
     const existingUser = await findUserByEmail(email);
     if (existingUser)
       return res.status(400).json({ message: 'Email already registered' });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await createUser(name, email, hashedPassword, avatar_url);
+    // username uniqueness
+    const existingUsername = await findUserByUsername(username);
+    if (existingUsername)
+      return res.status(400).json({ message: 'Username already taken' });
 
-    const token = generateToken(user);
-    res.status(201).json({ message: 'Signup successful', user, token });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await createUser({
+      username,
+      name,
+      email,
+      password: hashedPassword,
+      avatar_url,
+      is_verified: false
+    });
+
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+    await createOtp({
+      user_id: user.id,
+      code: otpCode,
+      purpose: 'email_verification',
+      ttlMinutes: 5
+    });
+
+    await sendEmail({
+      to: email,
+      subject: 'Verify your account',
+      text: `Your OTP is ${otpCode}`,
+      html: `<h3>Your OTP: ${otpCode}</h3>`
+    });
+
+    return res.status(201).json({
+      message: 'OTP sent to email. Please verify.',
+      email
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/* ================= VERIFY SIGNUP OTP (STEP 2) ================= */
+export const verifySignupOtp = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code)
+      return res.status(400).json({ message: 'Email and OTP required' });
+
+    const user = await findUserByEmail(email);
+    if (!user)
+      return res.status(404).json({ message: 'User not found' });
+
+    const otp = await findValidOtp({
+      user_id: user.id,
+      code,
+      purpose: 'email_verification'
+    });
+
+    if (!otp)
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+
+    await markOtpUsed(otp.id);
+    await markUserVerified(user.id);
+
+    const token = generateToken(user);
+
+    return res.json({
+      message: 'Account verified successfully',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar_url: user.avatar_url
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'OTP verification failed' });
   }
 };
 
@@ -45,41 +122,41 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password)
-      return res.status(400).json({ message: "Email and password are required." });
+      return res.status(400).json({ message: 'Email & password required' });
 
-    const userResult = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE email=$1',
       [email]
     );
 
-    if (userResult.rows.length === 0)
-      return res.status(401).json({ message: "Invalid email or password." });
+    if (!rows.length)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
-    const user = userResult.rows[0];
+    const user = rows[0];
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid email or password." });
+    if (!user.is_verified)
+      return res.status(403).json({ message: 'Please verify your email first' });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
-    res.status(200).json({
-      message: "Login successful",
+    const token = generateToken(user);
+
+    res.json({
+      message: 'Login successful',
       token,
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        avatar_url: user.avatar_url
       }
     });
 
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error(error);
+    res.status(500).json({ message: 'Login failed' });
   }
 };
 
@@ -174,14 +251,14 @@ export async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body;
     if (!email)
-      return res.status(400).json({ success:false, message:'email required' });
+      return res.status(400).json({ success: false, message: 'email required' });
 
     const user = await getUserByEmail(email);
     if (!user)
-      return res.status(404).json({ success:false, message:'user not found' });
+      return res.status(404).json({ success: false, message: 'user not found' });
 
     const token = crypto.randomBytes(32).toString('hex');
-    await createOtp({ user_id: user.id, code: token, purpose: 'password_reset', ttlMinutes: 60 });
+    await createOtp({ user_id: user.id, code: token, purpose: 'password_reset', ttlMinutes: 5 });
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
@@ -193,26 +270,26 @@ export async function forgotPassword(req, res, next) {
       html: `<a href="${resetLink}">Reset Password</a>`
     });
 
-    res.json({ success:true, message:'Password reset link sent' });
+    res.json({ success: true, message: 'Password reset link sent' });
   } catch (err) { next(err); }
 }
 
 export async function verifyOtp(req, res, next) {
   try {
     const { email, code } = req.body;
-    if (!email || !code) return res.status(400).json({ success:false, message:'email & code required' });
+    if (!email || !code) return res.status(400).json({ success: false, message: 'email & code required' });
 
     const user = await getUserByEmail(email);
-    if (!user) return res.status(404).json({ success:false, message:'user not found' });
+    if (!user) return res.status(404).json({ success: false, message: 'user not found' });
 
     // try both common purposes for compatibility
     let otp = await findValidOtp({ user_id: user.id, code, purpose: 'password_reset' });
     if (!otp) otp = await findValidOtp({ user_id: user.id, code, purpose: 'forgot_password' });
-    if (!otp) return res.status(400).json({ success:false, message:'invalid or expired OTP' });
+    if (!otp) return res.status(400).json({ success: false, message: 'invalid or expired OTP' });
 
     await markOtpUsed(otp.id);
 
-    res.json({ success:true, message:'OTP verified' });
+    res.json({ success: true, message: 'OTP verified' });
   } catch (err) { next(err); }
 }
 
@@ -220,11 +297,11 @@ export async function resetPassword(req, res, next) {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword)
-      return res.status(400).json({ success:false, message:'token & password required' });
+      return res.status(400).json({ success: false, message: 'token & password required' });
 
     const otp = await findValidOtp({ code: token, purpose: 'password_reset' });
     if (!otp)
-      return res.status(400).json({ success:false, message:'invalid or expired token' });
+      return res.status(400).json({ success: false, message: 'invalid or expired token' });
 
     await markOtpUsed(otp.id);
 
@@ -234,6 +311,6 @@ export async function resetPassword(req, res, next) {
       [hash, otp.user_id]
     );
 
-    res.json({ success:true, message:'Password reset successful' });
+    res.json({ success: true, message: 'Password reset successful' });
   } catch (err) { next(err); }
 }
