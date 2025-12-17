@@ -1,4 +1,6 @@
-import React, { useEffect } from "react";
+
+
+import React, { useEffect } from "react"; // ✅ add useEffect
 import {
   View,
   Text,
@@ -14,10 +16,10 @@ const { width, height } = Dimensions.get("window");
 
 export default function V4({ navigation }) {
 
-  // ✅ AUTO REDIRECT AFTER 2 SECONDS → LOGIN PAGE
+  // ✅ AUTO REDIRECT AFTER SUCCESS
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace("Loginscreen"); // ✅ LOGIN PAGE
+      navigation.replace("Home"); // ✅ open v66 after success
     }, 2000); // ⏱️ 2 seconds
 
     return () => clearTimeout(timer);
@@ -34,7 +36,7 @@ export default function V4({ navigation }) {
       {/* ❌ Close */}
       <TouchableOpacity
         style={styles.closeBtn}
-        onPress={() => navigation.replace("Loginscreen")} // manual skip → login
+        onPress={() => navigation.replace("v66")} // manual skip
       >
         <Ionicons name="close" size={22} color="#fff" />
       </TouchableOpacity>
