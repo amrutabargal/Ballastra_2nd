@@ -33,9 +33,9 @@ app.use(express.json());
 
 
 // serve uploads
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-app.use('/auth', authRoutes);
-app.use("/user", userRoutes);
+app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/api/auth', authRoutes);
+app.use("/api/user", userRoutes);
 app.use('/api/nexus', nexusRoutes);
 //app.use('/api/nexus/icons', iconRoutes);  // note: iconRoutes has GET '/' - becomes /api/nexus/icons/
 //app.use('/api/invite', inviteRoutes);
@@ -50,7 +50,7 @@ app.use('/api/activity', activityRoutes);
 app.use("/api/orbit", orbitRoutes);
 app.use("/api/call", callRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/messages", messageRoutes);
+app.use("/api/messages", messageRoutes);
 
 const PORT = process.env.PORT || 3000;
 

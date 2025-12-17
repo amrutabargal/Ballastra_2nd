@@ -56,7 +56,7 @@ export default function V4({ navigation }) {
     }
 
     // ✅ Navigate to VerifyOtpScreen
-    navigation.navigate("VerifyOtpScreen");
+    navigation.navigate("VerifyOtp");
   };
 
   return (
