@@ -5,18 +5,18 @@ import {
   createStackNavigator,
   CardStyleInterpolators,
 } from '@react-navigation/stack';
-
 /* Screens */
 import Logoscreen from '../screens/Logoscreen';
-import v2 from '../screens/v2';
-import v3 from '../screens/v3';
-import v4 from '../screens/v4';
 import signin_up from '../screens/signin_up';
 import Loginscreen from '../screens/Loginscreen';
 import CreateAccount from '../screens/CreateAccount';
+import GoogleLogin from '../screens/GoogleLogin';
+import VerifyOtpScreen from '../screens/VerifyOtpScreen';
+import Login_Successful from '../screens/Login_Successful'; 
+import Password_Successful from '../screens/Password_Successful';
 import HomeScreen from '../screens/HomeScreen';
-import ChannelScreen from '../screens/ChannelScreen';
-import ChatScreen from '../screens/ChatScreen';
+import CreateBlipsScreen from '../screens/CreateBlipsScreen';
+import Blips_History from '../screens/Blips_History';
 import Create_Nexus from '../screens/Create_Nexus';
 import My_Own_Nexus from '../screens/My_Own_Nexus';
 import Build_Your_Nexus from '../screens/Build_Your_Nexus';
@@ -24,30 +24,42 @@ import Share_Profile from '../screens/Share_Profile';
 import CommunityDetails from '../screens/CommunityDetails';
 import Press_Space_Creation_Flow from '../screens/Press_Space_Creation_Flow';
 import Start_a_Space from '../screens/Start_a_Space';
+import create_Category from '../screens/create_Category';
 import Space_Settings from '../screens/Space_Settings';
 import SpacePermissionsScreen from '../screens/Space_Permissions';
-import create_Category from '../screens/create_Category';
 import Nexus_Setting from '../screens/Nexus_Setting';
-import NexusCommunity from '../screens/NexusCommunity';
-import NexusManagement from '../screens/NexusManagement';
 import Nexus_Setting_Overview from '../screens/Nexus_Setting_Overview';
 import Nexus_Setting_Spaces from '../screens/Nexus_Setting_Spaces';
 import Nexus_Setting_Categories from '../screens/Nexus_Setting_Categories';
 import Setting_category_create_category from '../screens/Setting_category_create_category';
-import Setting_category_create_Space from '../screens/Setting_category_create_Space';
 import Nexus_Setting_Members from '../screens/Nexus_Setting_Members';
-import Nexus_Setting_Stickers from '../screens/Nexus_Setting_Stickers';
-import Nexus_Setting_Emoji from '../screens/Nexus_Setting_Emoji';
-import Nexus_Setting_Moderation from '../screens/Nexus_Setting_Moderation';
 import Nexus_Setting_Invites from '../screens/Nexus_Setting_Invites';
+import Nexus_Setting_Moderation from '../screens/Nexus_Setting_Moderation';
+import Activity_History from '../screens/Activity_History';
 import Nexus_Setting_Security from '../screens/Nexus_Setting_Security';
-import VerifyOtpScreen from '../screens/VerifyOtpScreen';
+import Nexus_Setting_Emoji from '../screens/Nexus_Setting_Emoji';
+import Nexus_Setting_Stickers from '../screens/Nexus_Setting_Stickers';
+import NexusCommunity from '../screens/NexusCommunity';
+import NexusManagement from '../screens/NexusManagement';
+
+
+
+
+
+
+
+
+
+import ChannelScreen from '../screens/ChannelScreen';
+import ChatScreen from '../screens/ChatScreen';
+
+import Setting_category_create_Space from '../screens/Setting_category_create_Space';
+
 import EditMemberScreen from '../screens/EditMemberScreen';
 import Timeout from '../screens/Timeout';
 import Kick from '../screens/Kick';
 import Ban from '../screens/Ban';
 import TransferOwnershipScreen from '../screens/Transfer_Ownership';
-import Activity_History from '../screens/Activity_History';
 import FilterUser from '../screens/FilterUser';
 import FilterAction from '../screens/FilterAction';
 import Nexuschat from '../screens/Nexuschat';
@@ -91,12 +103,11 @@ import Voice_Setting from '../screens/Voice_Setting';
 import Vedio_Setting from '../screens/Vedio_Setting';
 import Name_Click_Settings from '../screens/Name_Click_Settings';
 import New_Share from '../screens/New_Share';
-import CreateBlipsScreen from '../screens/CreateBlipsScreen';
 import Header_media_memeberprofile from '../screens/Header_media_memeberprofile';
 import HEaderMediachat from '../screens/HEaderMediachat';
 import Scanershare from '../screens/Scanershare';
 import SearchScreen from '../screens/Search';
-import GoogleLogin from '../screens/GoogleLogin';
+
 /* Footer Component */
 import Footer from '../components/Footer';
 
@@ -131,59 +142,56 @@ export default function RootNavigator() {
     >
       {/* onboarding / auth */}
       <Stack.Screen name="Logoscreen" component={Logoscreen} />
-      <Stack.Screen name="v2" component={v2} />
-      <Stack.Screen name="v3" component={v3} />
-      <Stack.Screen name="v4" component={v4} />
       <Stack.Screen name="signin_up" component={signin_up} />
+      <Stack.Screen name="GoogleLogin" component={GoogleLogin} />
       <Stack.Screen name="Loginscreen" component={Loginscreen} />
       <Stack.Screen name="CreateAccount" component={CreateAccount} />
-
-      {/* main flows */}
+       <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} />
+      <Stack.Screen name="Login_Successful" component={Login_Successful} />
+      <Stack.Screen name="Password_Successful" component={Password_Successful} />
+      <Stack.Screen name="Home" component={HomeWithFooter} />
+      <Stack.Screen name="CreateBlipsScreen" component={CreateBlipsScreen} />
+      <Stack.Screen name="Blips_History" component={Blips_History} />
       <Stack.Screen name="Create_Nexus" component={Create_Nexus} />
       <Stack.Screen name="My_Own_Nexus" component={My_Own_Nexus} />
       <Stack.Screen name="Build_Your_Nexus" component={Build_Your_Nexus} />
       <Stack.Screen name="Share_Profile" component={Share_Profile} />
-      <Stack.Screen name="Search" component={SearchScreen} />
-      <Stack.Screen
-        name="Press_Space_Creation_Flow"
-        component={Press_Space_Creation_Flow}
-      />
+      <Stack.Screen name="CommunityDetails" component={CommunityWithFooter} />
+      <Stack.Screen name="Press_Space_Creation_Flow" component={Press_Space_Creation_Flow}  />
       <Stack.Screen name="Start_a_Space" component={Start_a_Space} />
-      <Stack.Screen name="Space_Settings" component={Space_Settings} />
-      <Stack.Screen
-        name="Space_Permissions"
-        component={SpacePermissionsScreen}
-      />
-
       <Stack.Screen name="create_Category" component={create_Category} />
-
+      <Stack.Screen name="Space_Settings" component={Space_Settings} />
+      <Stack.Screen name="Space_Permissions" component={SpacePermissionsScreen} />
       <Stack.Screen name="Nexus_Setting" component={Nexus_Setting} />
+      <Stack.Screen name="Nexus_Setting_Overview" component={Nexus_Setting_Overview} />
+      <Stack.Screen name="Nexus_Setting_Spaces" component={Nexus_Setting_Spaces} />
+      <Stack.Screen name="Nexus_Setting_Categories" component={Nexus_Setting_Categories} />
+      <Stack.Screen name="Setting_category_create_category" component={Setting_category_create_category}  />
+      <Stack.Screen name="Setting_category_create_Space" component={Setting_category_create_Space} />
+      <Stack.Screen name="Nexus_Setting_Members" component={Nexus_Setting_Members} />
+
+      
+
+
+
+
+
+
+
+
+
+
+
+      {/* main flows */}
+     
+      <Stack.Screen name="Search" component={SearchScreen} />
+     
+      
+
+
       <Stack.Screen name="NexusCommunity" component={NexusCommunity} />
       <Stack.Screen name="NexusManagement" component={NexusManagement} />
-      <Stack.Screen
-        name="Nexus_Setting_Overview"
-        component={Nexus_Setting_Overview}
-      />
-      <Stack.Screen
-        name="Nexus_Setting_Spaces"
-        component={Nexus_Setting_Spaces}
-      />
-      <Stack.Screen
-        name="Nexus_Setting_Categories"
-        component={Nexus_Setting_Categories}
-      />
-      <Stack.Screen
-        name="Setting_category_create_category"
-        component={Setting_category_create_category}
-      />
-      <Stack.Screen
-        name="Setting_category_create_Space"
-        component={Setting_category_create_Space}
-      />
-      <Stack.Screen
-        name="Nexus_Setting_Members"
-        component={Nexus_Setting_Members}
-      />
+      
       <Stack.Screen
         name="Nexus_Setting_Stickers"
         component={Nexus_Setting_Stickers}
@@ -204,7 +212,7 @@ export default function RootNavigator() {
         name="Nexus_Setting_Security"
         component={Nexus_Setting_Security}
       />
-      <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} />
+     
       <Stack.Screen name="EditMember" component={EditMemberScreen} />
       <Stack.Screen name="Timeout" component={Timeout} />
       <Stack.Screen name="Kick" component={Kick} />
@@ -226,6 +234,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Header_media_memeberprofile" component={Header_media_memeberprofile} />
 <Stack.Screen name="HEaderMediachat" component={HEaderMediachat} />
 <Stack.Screen name="Scanershare" component={Scanershare} />
+
       {/* Report detail screens */}
       <Stack.Screen
         name="Nudity_or_sexual_activity"
@@ -295,8 +304,6 @@ export default function RootNavigator() {
 <Stack.Screen name="Voice_Setting" component={Voice_Setting} />
 <Stack.Screen name="Vedio_Setting" component={Vedio_Setting} />
 <Stack.Screen name="New_Share" component={New_Share} />
-<Stack.Screen name="CreateBlipsScreen" component={CreateBlipsScreen} />
-<Stack.Screen name="GoogleLogin" component={GoogleLogin} />
 
 
 
@@ -316,7 +323,7 @@ export default function RootNavigator() {
       </Stack.Group>
 
       {/* Screens with / without Footer */}
-      <Stack.Screen name="Home" component={HomeWithFooter} />
+     
       {/* Channel la footer nahi */}
       <Stack.Screen name="Channel" component={ChannelScreen} />
       <Stack.Screen name="Chat" component={ChatWithFooter} />
@@ -326,10 +333,7 @@ export default function RootNavigator() {
       />
       {/* IMPORTANT: Profile screen name now "Profile" (not "ProfileScreen") */}
       <Stack.Screen name="Profile" component={ProfileWithFooter} />
-      <Stack.Screen
-        name="CommunityDetails"
-        component={CommunityWithFooter}
-      />
+     
       <Stack.Screen name="Nexuschat" component={NexuschatWithFooter} />
     </Stack.Navigator>
   );

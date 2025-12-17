@@ -1,4 +1,3 @@
-          {/* PROFILE ROW */}
 
 import React, { useState } from "react";
 import {
@@ -47,7 +46,7 @@ export default function MemberProfileScreen({ navigation }) {
                 name="call-outline"
                 onPress={() => setCallVisible(true)}
               />
-              <IconBtn name="videocam-outline" onPress={() => navigation.navigate('VideoCallScreen')} />
+              <IconBtn name="videocam-outline" onPress={() => navigation.navigate('VideoCall')} />
               <IconBtn name="person-outline" onPress={() => navigation.navigate('HEaderMediachat')} />
               <IconBtn
                 name="information-circle-outline"

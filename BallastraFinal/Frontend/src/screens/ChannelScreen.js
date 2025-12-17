@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   StatusBar,
+  
   FlatList,
   TouchableOpacity,
   TextInput,
@@ -77,6 +78,7 @@ export default function ChatScreen({ navigation }) {
   const recordingRef = useRef(null);
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingSupported, setRecordingSupported] = useState(true);
   const insets = useSafeAreaInsets();
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const flatListRef = useRef(null);
@@ -255,8 +257,15 @@ export default function ChatScreen({ navigation }) {
       try {
         await ImagePicker.requestCameraPermissionsAsync();
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-        const { granted } = await Audio.requestPermissionsAsync();
+        // request audio permission (handle different return shapes across SDKs)
+        const res = await (Audio.requestPermissionsAsync?.() || Audio.requestPermissions?.());
+        const granted = !!(res && (res.granted === true || res.status === 'granted' || res.status === 1));
         if (!granted) console.log("Audio permission not granted");
+        // detect if recording APIs are available
+        if (!Audio || typeof Audio.Recording !== 'function' || typeof Audio.setAudioModeAsync !== 'function') {
+          console.log('Audio recording APIs not available in this runtime');
+          setRecordingSupported(false);
+        }
       } catch (e) {
         console.log("Permission request error", e);
       }
@@ -264,15 +273,29 @@ export default function ChatScreen({ navigation }) {
   }, []);
 
   const startRecording = async () => {
+    if (!recordingSupported) {
+      Alert.alert('Not supported', 'Recording is not available on this platform or SDK.');
+      return;
+    }
     try {
-      const { granted } = await Audio.requestPermissionsAsync();
+      // request and normalize permission result
+      const res = await (Audio.requestPermissionsAsync?.() || Audio.requestPermissions?.());
+      const granted = !!(res && (res.granted === true || res.status === 'granted' || res.status === 1));
       if (!granted) {
         Alert.alert("Permission needed", "Allow microphone to record voice messages");
         return;
       }
       await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      if (!Audio || typeof Audio.Recording !== 'function') {
+        throw new Error('Recording API unavailable');
+      }
       const rec = new Audio.Recording();
-      await rec.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+      // fallback if preset not available
+      const preset = Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY || {
+        android: { extension: '.m4a', outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4 || 2, audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC || 3, sampleRate: 44100, numberOfChannels: 2, bitRate: 128000 },
+        ios: { extension: '.m4a', audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH || 127, sampleRate: 44100, numberOfChannels: 2, bitRate: 128000 },
+      };
+      await rec.prepareToRecordAsync(preset);
       await rec.startAsync();
       recordingRef.current = rec;
       setRecording(rec);
@@ -547,10 +570,15 @@ export default function ChatScreen({ navigation }) {
 
               {input.trim().length === 0 ? (
                 <TouchableOpacity
-                  style={[styles.iconBtn, isRecording && styles.recordingBtn]}
+                  style={[styles.iconBtn, isRecording && styles.recordingBtn, !recordingSupported && styles.iconDisabled]}
                   onPress={() => (isRecording ? stopRecording() : startRecording())}
+                  disabled={!recordingSupported && !isRecording}
                 >
-                  <Ionicons name={isRecording ? "stop" : "mic"} size={20} color={isRecording ? "#FFFFFF" : "#E5E7EB"} />
+                  <Ionicons
+                    name={isRecording ? "stop" : "mic"}
+                    size={20}
+                    color={!recordingSupported ? "#64748b" : isRecording ? "#FFFFFF" : "#E5E7EB"}
+                  />
                   {isRecording && <View style={styles.recordingDot} />}
                 </TouchableOpacity>
               ) : (
@@ -876,6 +904,7 @@ const styles = StyleSheet.create({
   },
   recordingBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#EF4444", alignItems: "center", justifyContent: "center" },
   recordingDot: { position: "absolute", bottom: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: "#FF2D55" },
+  iconDisabled: { opacity: 0.45 },
 
   backdrop: { flex: 1, backgroundColor: "rgba(15,23,42,0.6)" },
 

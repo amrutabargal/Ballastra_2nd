@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   View,
@@ -7,12 +8,12 @@ import {
   ScrollView,
   Dimensions,
   StatusBar,
-  SafeAreaView,
   Image,
   ImageBackground,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SvgXml } from "react-native-svg";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import GameIcon from "../../assets/Game.png";
 import SchoolIcon from "../../assets/School.png";
@@ -53,7 +54,7 @@ export default function Create_Nexus({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor="#0C142A" />
 
       <View style={styles.container}>
@@ -134,7 +135,7 @@ export default function Create_Nexus({ navigation }) {
         {/* Explore Button */}
         <TouchableOpacity
           style={styles.exploreButton}
-          onPress={() => navigation.navigate("HomeScreen")}
+          onPress={() => navigation.navigate("Home")}
         >
           <Text style={styles.exploreButtonText}>Explore Nexus</Text>
         </TouchableOpacity>
@@ -153,7 +154,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#02081A",
     paddingHorizontal: scale(22),
-paddingTop: height * 0.05
   },
 
   closeButton: {

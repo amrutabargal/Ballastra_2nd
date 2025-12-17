@@ -1,8 +1,5 @@
 
-
 import React, { useState } from "react";
-import { Linking } from "react-native";
-
 import {
   View,
   Text,
@@ -246,18 +243,13 @@ export default function LoginScreen({ navigation }) {
               </View>
 
               <View style={styles.footerContainer}>
-               <TouchableOpacity
-  onPress={() => Linking.openURL("https://your-privacy-policy-url.com")}
->
-  <Text style={styles.footerText}>Privacy Policy</Text>
-</TouchableOpacity>
-
-<TouchableOpacity
-  onPress={() => Linking.openURL("https://your-terms-url.com")}
->
-  <Text style={styles.footerText}>Terms of Services</Text>
-</TouchableOpacity>
-
+                <TouchableOpacity>
+                  <Text style={styles.footerText}>Privacy Policy</Text>
+                </TouchableOpacity>
+                <View style={{ width: 18 }} />
+                <TouchableOpacity>
+                  <Text style={styles.footerText}>Terms of Services</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </ScrollView>
@@ -378,6 +370,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "500",
     textDecorationLine: "underline",
-    paddingLeft: 10,
   },
 });
