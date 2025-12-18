@@ -2,12 +2,22 @@ import pool from "../config/db.js";
 
 // Find user by email
 export const findUserByEmail = async (email) => {
-  const result = await pool.query(
-    "SELECT * FROM users WHERE email = $1 AND is_verified = true",
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE email = $1 LIMIT 1',
     [email]
   );
-  return result.rows[0];
+  return rows[0];
 };
+
+
+export const findVerifiedUserByEmail = async (email) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE email = $1 AND is_verified = true LIMIT 1',
+    [email]
+  );
+  return rows[0];
+};
+
 
 export const createUser = async (data) => {
   const { username, name, email, password, avatar_url, is_verified } = data;
@@ -28,6 +38,22 @@ export const findUserByUsername = async (username) => {
     [username]
   );
   return rows[0];
+};
+
+
+export const findVerifiedUserByUsername = async (username) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE username = $1 AND is_verified = true LIMIT 1',
+    [username]
+  );
+  return rows[0];
+};
+
+export const markUserVerified = async (userId) => {
+  await pool.query(
+    'UPDATE users SET is_verified = true WHERE id = $1',
+    [userId]
+  );
 };
 /* ================= GOOGLE ================= */
 
@@ -59,12 +85,6 @@ export const createUserWithGoogle = async (name, email, googleId, avatar_url) =>
   return result.rows[0];
 };
 
-export const markUserVerified = async (userId) => {
-  await pool.query(
-    'UPDATE users SET is_verified=true WHERE id=$1',
-    [userId]
-  );
-};
 
 /* ================= APPLE ================= */
 

@@ -6,7 +6,10 @@ import crypto from "crypto";
 import {
   createUser,
   findUserByEmail,
+  findVerifiedUserByEmail,
+  findVerifiedUserByUsername,
   findUserByUsername,
+  markUserVerified,
   findUserByAppleId,
   createUserWithApple,
   findUserByGoogleId,
@@ -25,27 +28,36 @@ export const signup = async (req, res) => {
   try {
     const { username, name, email, password, avatar_url } = req.body;
 
-    // email uniqueness
-    const existingUser = await findUserByEmail(email);
-    if (existingUser)
+    // 1. Block if VERIFIED email exists
+    const verifiedEmailUser = await findVerifiedUserByEmail(email);
+    if (verifiedEmailUser) {
       return res.status(400).json({ message: 'Email already registered' });
+    }
 
-    // username uniqueness
-    const existingUsername = await findUserByUsername(username);
-    if (existingUsername)
+    // 2. Block if VERIFIED username exists
+    const verifiedUsernameUser = await findVerifiedUserByUsername(username);
+    if (verifiedUsernameUser) {
       return res.status(400).json({ message: 'Username already taken' });
+    }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 3. Check if UNVERIFIED user already exists
+    let user = await findUserByEmail(email);
 
-    const user = await createUser({
-      username,
-      name,
-      email,
-      password: hashedPassword,
-      avatar_url,
-      is_verified: false
-    });
+    if (!user) {
+      // create new unverified user
+      const hashedPassword = await bcrypt.hash(password, 10);
 
+      user = await createUser({
+        username,
+        name,
+        email,
+        password: hashedPassword,
+        avatar_url,
+        is_verified: false
+      });
+    }
+
+    // 4. Generate & send OTP (always)
     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
 
     await createOtp({
@@ -57,21 +69,26 @@ export const signup = async (req, res) => {
 
     await sendEmail({
       to: email,
-      subject: 'Verify your account',
-      text: `Your OTP is ${otpCode}`,
-      html: `<h3>Your OTP: ${otpCode}</h3>`
+      subject: 'Your Ballastra verification code',
+      text: `Your verification code is ${otpCode}`,
+      html: `
+        <p>Your Ballastra verification code is:</p>
+        <h2>${otpCode}</h2>
+        <p>This code expires in 5 minutes.</p>
+      `
     });
 
-    return res.status(201).json({
-      message: 'OTP sent to email. Please verify.',
+    return res.status(200).json({
+      message: 'OTP sent to email. Please verify to complete signup.',
       email
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Signup Error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 /* ================= VERIFY SIGNUP OTP (STEP 2) ================= */
 export const verifySignupOtp = async (req, res) => {
@@ -81,6 +98,7 @@ export const verifySignupOtp = async (req, res) => {
     if (!email || !code)
       return res.status(400).json({ message: 'Email and OTP required' });
 
+    // find user (verified OR unverified)
     const user = await findUserByEmail(email);
     if (!user)
       return res.status(404).json({ message: 'User not found' });
@@ -104,7 +122,7 @@ export const verifySignupOtp = async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email,
         avatar_url: user.avatar_url
       }
@@ -112,53 +130,50 @@ export const verifySignupOtp = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'OTP verification failed' });
+    return res.status(500).json({ message: 'OTP verification failed' });
   }
 };
+
 
 /* ================= LOGIN ================= */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email & password required' });
-
     const { rows } = await pool.query(
-      'SELECT * FROM users WHERE email=$1',
+      'SELECT * FROM users WHERE email = $1 AND is_verified = true LIMIT 1',
       [email]
     );
 
     if (!rows.length)
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid email or password' });
 
     const user = rows[0];
 
-    if (!user.is_verified)
-      return res.status(403).json({ message: 'Please verify your email first' });
-
     const match = await bcrypt.compare(password, user.password);
     if (!match)
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid email or password' });
 
     const token = generateToken(user);
 
-    res.json({
+    return res.json({
       message: 'Login successful',
       token,
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email,
         avatar_url: user.avatar_url
       }
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Login failed' });
+    console.error('Login Error:', error);
+    return res.status(500).json({ message: 'Login failed' });
   }
 };
+
+
 
 /* ================= GOOGLE LOGIN (NEW) ================= */
 export const googleLogin = async (req, res) => {
@@ -246,6 +261,7 @@ async function getUserByEmail(email) {
   );
   return rows[0];
 }
+
 
 export async function forgotPassword(req, res, next) {
   try {
