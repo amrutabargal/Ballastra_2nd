@@ -180,43 +180,64 @@ export const googleLogin = async (req, res) => {
   try {
     const { id_token } = req.body;
 
-    if (!id_token)
-      return res.status(400).json({ message: "id_token is required" });
+    if (!id_token) {
+      return res.status(400).json({
+        message: 'id_token is required'
+      });
+    }
 
-    // 1. Verify Google token
+    // 1. Verify Google ID token
     const googleData = await googleService.verifyIdToken(id_token);
+
     const googleId = googleData.sub;
     const email = googleData.email;
     const name = googleData.name;
     const avatar_url = googleData.picture;
 
-    // 2. Check if user exists
+    if (!email) {
+      return res.status(400).json({
+        message: 'Google account email not available'
+      });
+    }
+
+    // 2. Check user by Google ID
     let user = await findUserByGoogleId(googleId);
 
     if (!user) {
-      // if same email exists, attach google id
-      const emailUser = await findUserByEmail(email);
+      // 3. If email exists, attach Google ID
+      const emailUser = await findUserByEmailIncludingUnverified(email);
+
       if (emailUser) {
         user = await attachGoogleId(emailUser.id, googleId);
       } else {
-        user = await createUserWithGoogle(name, email, googleId, avatar_url);
+        // 4. Create verified user (Google already verified email)
+        user = await createUserWithGoogle({
+          name,
+          email,
+          google_id: googleId,
+          avatar_url,
+          is_verified: true
+        });
       }
     }
 
-    // 3. Generate JWT
+    // 5. Generate JWT
     const token = generateToken(user);
 
     return res.json({
-      message: "Google login successful",
+      message: 'Google login successful',
       token,
       user
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ message: "Google authentication failed" });
+    console.error('Google login error:', error);
+    return res.status(401).json({
+      message: 'Google authentication failed'
+    });
   }
 };
+
 
 /* ================= APPLE LOGIN ================= */
 export const appleLogin = async (req, res) => {
@@ -266,28 +287,106 @@ async function getUserByEmail(email) {
 export async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body;
-    if (!email)
-      return res.status(400).json({ success: false, message: 'email required' });
 
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Do NOT reveal whether user exists (security best practice)
     const user = await getUserByEmail(email);
-    if (!user)
-      return res.status(404).json({ success: false, message: 'user not found' });
 
-    const token = crypto.randomBytes(32).toString('hex');
-    await createOtp({ user_id: user.id, code: token, purpose: 'password_reset', ttlMinutes: 5 });
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+      await createOtp({
+        user_id: user.id,
+        code: token,
+        purpose: 'password_reset',
+        ttlMinutes: 15
+      });
 
-    await sendEmail({
-      to: user.email,
-      subject: "Password reset link",
-      text: `Reset password: ${resetLink}`,
-      html: `<a href="${resetLink}">Reset Password</a>`
+      const frontendUrl =
+        process.env.FRONTEND_URL || 'http://localhost:3000';
+
+      const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset your password',
+        text: `Reset your password using this link: ${resetLink}`,
+        html: `
+          <p>You requested a password reset.</p>
+          <p><a href="${resetLink}">Click here to reset your password</a></p>
+          <p>This link expires in 15 minutes.</p>
+        `
+      });
+    }
+
+    // Same response always (prevents email enumeration)
+    return res.json({
+      success: true,
+      message: 'If the email exists, a reset link has been sent'
     });
 
-    res.json({ success: true, message: 'Password reset link sent' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function resetPassword(req, res, next) {
+  try {
+    const token = req.body.token || req.query.token;
+    const { newPassword, confirmPassword } = req.body;
+
+    // basic validation
+    if (!token || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token, new password and confirm password are required'
+      });
+    }
+
+    // password match validation
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Passwords do not match'
+      });
+    }
+
+    const otp = await findValidOtp({
+      code: token,
+      purpose: 'password_reset'
+    });
+
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset link'
+      });
+    }
+
+    // mark token as used (single-use)
+    await markOtpUsed(otp.id);
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      'UPDATE users SET password = $1 WHERE id = $2',
+      [hashedPassword, otp.user_id]
+    );
+
+    return res.json({
+      success: true,
+      message: 'Password reset successful'
+    });
+
+  } catch (err) {
+    next(err);
+  }
 }
 
 export async function verifyOtp(req, res, next) {
@@ -309,24 +408,3 @@ export async function verifyOtp(req, res, next) {
   } catch (err) { next(err); }
 }
 
-export async function resetPassword(req, res, next) {
-  try {
-    const { token, newPassword } = req.body;
-    if (!token || !newPassword)
-      return res.status(400).json({ success: false, message: 'token & password required' });
-
-    const otp = await findValidOtp({ code: token, purpose: 'password_reset' });
-    if (!otp)
-      return res.status(400).json({ success: false, message: 'invalid or expired token' });
-
-    await markOtpUsed(otp.id);
-
-    const hash = await bcrypt.hash(newPassword, 10);
-    await pool.query(
-      'UPDATE users SET password=$1 WHERE id=$2',
-      [hash, otp.user_id]
-    );
-
-    res.json({ success: true, message: 'Password reset successful' });
-  } catch (err) { next(err); }
-}
