@@ -702,7 +702,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
   },
-
   mentionItem: {
     flexDirection: "row",
     alignItems: "center",
