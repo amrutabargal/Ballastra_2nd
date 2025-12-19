@@ -1,6 +1,6 @@
 
 
-import React, { useEffect } from "react"; // ✅ add useEffect
+import React, { useEffect } from "react"; 
 import {
   View,
   Text,
