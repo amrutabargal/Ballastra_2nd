@@ -1,92 +1,46 @@
-import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-  ImageBackground,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
 
-export default function V4({ navigation }) {
+import React, { useEffect, useRef } from 'react';
+import { View, PanResponder, Image, Animated, StyleSheet } from 'react-native';
+import Images from '../../assets/logo.png';
 
-  // ✅ AUTO REDIRECT AFTER 2 SECONDS → LOGIN PAGE
+
+export default function Logoscreen({ navigation }) {
+  const pan = useRef(new Animated.ValueXY()).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 20, // detect horizontal swipe
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -50) {
+          // swipe left → go to v2
+          navigation.navigate('signin_up');
+        }
+      },
+    })
+  ).current;
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace("Loginscreen"); // ✅ LOGIN PAGE
-    }, 2000); // ⏱️ 2 seconds
-
+      // Auto navigate after 2s (optional)
+      navigation.navigate('signin_up');
+    }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigation]);
 
   return (
-    <ImageBackground
-      source={require("../../assets/image1.png")}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <StatusBar hidden />
+    <View style={styles.container} {...panResponder.panHandlers}>
 
-      {/* ❌ Close */}
-      <TouchableOpacity
-        style={styles.closeBtn}
-        onPress={() => navigation.replace("Loginscreen")} // manual skip → login
-      >
-        <Ionicons name="close" size={22} color="#fff" />
-      </TouchableOpacity>
-
-      {/* ✅ Success Card */}
-      <View style={styles.centerWrapper}>
-        <View style={styles.successCard}>
-          <Text style={styles.successText}>
-            Create Account{"\n"}Successfully
-          </Text>
-        </View>
-      </View>
-    </ImageBackground>
+      <Image
+        source={Images}
+        style={{ width: 200, height: 200 }}
+        resizeMode="contain"
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 24,
-    backgroundColor: "#050B18",
-  },
-
-  closeBtn: {
-    position: "absolute",
-    top: 55,
-    left: 20,
-    zIndex: 10,
-  },
-
-  centerWrapper: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  successCard: {
-    width: width * 0.78,
-    height: height * 0.32,
-    backgroundColor: "#162B5E",
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(90,120,255,0.35)",
-  },
-
-  successText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "400",
-    textAlign: "center",
-    lineHeight: 20,
-  },
+  container: { flex: 1, backgroundColor: '#0c053aff', justifyContent: 'center', alignItems: 'center' },
 });

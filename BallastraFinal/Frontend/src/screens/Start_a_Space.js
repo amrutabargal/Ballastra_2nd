@@ -5,14 +5,13 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
-  Platform,
   ScrollView,
   TouchableOpacity,
   TextInput,
   Switch,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context"; // ✅ ADDED
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -30,71 +29,43 @@ export default function StartSpaceScreen() {
     if (!spaceName.trim()) {
       return Alert.alert("Error", "Please enter a space name.");
     }
-
     setLoading(true);
-
-    try {
-      const response = await fetch("http://YOUR_BACKEND_URL/api/spaces/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: spaceName,
-          mode: selectedMode,
-          private: isPrivate,
-        }),
-      });
-
-      const data = await response.json();
-      setLoading(false);
-
-      if (response.ok) {
-        Alert.alert("Success", `Space created with ID: ${data?.data?.id || ""}`);
-      } else {
-        Alert.alert("Error", data.message || "Something went wrong");
-      }
-    } catch (err) {
-      setLoading(false);
-      Alert.alert("Error", "Failed to connect to server");
-    }
+    setTimeout(() => setLoading(false), 1200); // mock
   };
 
   return (
-    <SafeAreaView style={styles.container}> {/* ✅ ONLY CHANGE */}
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
+      {/* HEADER */}
       <View style={styles.headerRow}>
         <TouchableOpacity activeOpacity={0.7}>
           <Ionicons name="close" size={24} color="#ffffff" />
         </TouchableOpacity>
+
         <Text style={styles.headerTitle}>Start a Space</Text>
+
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
         {/* Space name */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Space name</Text>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter space name"
-              placeholderTextColor="rgba(255,255,255,0.5)"
-              value={spaceName}
-              onChangeText={setSpaceName}
-            />
-          </View>
+        <Text style={styles.label}>Space name</Text>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            value={spaceName}
+            onChangeText={setSpaceName}
+            placeholder="Enter space name"
+            placeholderTextColor="rgba(255,255,255,0.5)"
+          />
         </View>
 
         {/* Space Mode */}
-        <View style={[styles.section, { marginTop: 18 }]}>
-          <Text style={styles.label}>Space Mode</Text>
-        </View>
+        <Text style={[styles.label, { marginTop: 22 }]}>Space Mode</Text>
 
         <ModeCard
           title="Chat Space"
@@ -132,6 +103,7 @@ export default function StartSpaceScreen() {
           Private Spaces are visible only to people you choose. Everyone else won't see them.
         </Text>
 
+        {/* Private Space */}
         <View style={styles.privateCard}>
           <View style={styles.privateLeft}>
             <View style={styles.privateIconWrapper}>
@@ -145,21 +117,20 @@ export default function StartSpaceScreen() {
             onValueChange={setIsPrivate}
             trackColor={{ false: "#29314D", true: "#4A7FE8" }}
             thumbColor="#ffffff"
-            ios_backgroundColor="#29314D"
             style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
           />
         </View>
 
-        <TouchableOpacity activeOpacity={0.7} style={styles.learnMoreRow}>
+        <TouchableOpacity style={styles.learnMoreRow}>
           <Text style={styles.learnMoreText}>Learn more about Space Modes</Text>
-          <Ionicons name="arrow-forward" size={14} color="#9FB4FF" style={{ marginLeft: 4 }} />
+          <Ionicons name="arrow-forward" size={14} color="#9FB4FF" />
         </TouchableOpacity>
 
+        {/* CREATE */}
         <TouchableOpacity
-          style={[styles.createButton, { opacity: loading ? 0.7 : 1 }]}
+          style={[styles.createButton, loading && { opacity: 0.7 }]}
           activeOpacity={0.85}
           onPress={handleCreate}
-          disabled={loading}
         >
           <LinearGradient
             colors={["#1a2957ff", "#0C142A", "#1a2957ff"]}
@@ -177,6 +148,8 @@ export default function StartSpaceScreen() {
   );
 }
 
+/* ---------------- MODE CARD ---------------- */
+
 function ModeCard({ title, description, icon, selected, onPress }) {
   return (
     <TouchableOpacity
@@ -186,6 +159,7 @@ function ModeCard({ title, description, icon, selected, onPress }) {
     >
       <View style={styles.modeLeft}>
         <View style={styles.modeIconWrapper}>{icon}</View>
+
         <View style={{ flex: 1 }}>
           <Text style={styles.modeTitle}>{title}</Text>
           <Text style={styles.modeDesc}>{description}</Text>
@@ -198,75 +172,106 @@ function ModeCard({ title, description, icon, selected, onPress }) {
     </TouchableOpacity>
   );
 }
+
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#050B18" },
- 
+
   headerRow: {
-    marginTop: 12,
     paddingHorizontal: 20,
+    paddingTop: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  headerTitle: { color: "#ffffff", fontSize: 18, fontWeight: "600" },
 
-  scrollContent: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 },
+  headerTitle: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
 
-  section: { marginBottom: 4 },
-  label: { color: "rgba(255,255,255,0.85)", fontSize: 13, marginBottom: 10, fontWeight: "500" },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 28,
+    paddingBottom: 44,
+  },
+
+  label: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 13,
+    fontWeight: "500",
+    marginBottom: 10,
+  },
 
   inputWrapper: {
-    borderRadius: 20,
-    overflow: "hidden",
+    borderRadius: 22,
     backgroundColor: "#0B1730",
     borderWidth: 1,
     borderColor: "#2D57C8",
   },
-  input: { height: 52, paddingHorizontal: 16, color: "#ffffff", fontSize: 14 },
 
+  input: {
+    height: 54,
+    paddingHorizontal: 16,
+    color: "#ffffff",
+    fontSize: 14,
+  },
+
+  /* MODE CARD */
   modeCard: {
-  marginTop: 10,
-  borderRadius: 22,
-  paddingHorizontal: 16,
-  height:52,
-  paddingVertical: 14,
-  backgroundColor: "#071428",
+    marginTop: 12,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#071428",
+    borderWidth: 1,
+    borderColor: "rgba(63,104,255,0.45)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#3F68FF",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
 
-  // ✅ Border
-  borderWidth: 1,
-  borderColor: "rgba(63,104,255,0.45)",
+  modeCardSelected: {
+    backgroundColor: "#0C1C3A",
+    borderColor: "#4A7FE8",
+  },
 
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-
-  // ✅ Light Shadow + Glow
-  shadowColor: "#3F68FF",
-  shadowOffset: { width: 0, height: 3 },
-  shadowOpacity: 0.35,
-  shadowRadius: 6,
-
-  // ✅ Android shadow
-  elevation: 4,
-},
-
-
-  modeCardSelected: { backgroundColor: "#0C1C3A", borderColor: "#4A7FE8" },
-
-  modeLeft: { flexDirection: "row", alignItems: "flex-start", flex: 1, paddingRight: 12 },
+  modeLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    paddingRight: 12,
+  },
 
   modeIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: "#0E2348",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 14,
   },
 
-  modeTitle: { color: "#ffffff", fontSize: 14, fontWeight: "600", marginBottom: 4 },
-  modeDesc: { color: "rgba(255,255,255,0.6)", fontSize: 11 },
+  modeTitle: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  modeDesc: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 8,
+    lineHeight: 15,
+  },
 
   toggleOuter: {
     width: 38,
@@ -278,7 +283,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
 
-  toggleOuterOn: { backgroundColor: "#4A7FE8", borderColor: "#4A7FE8" },
+  toggleOuterOn: {
+    backgroundColor: "#4A7FE8",
+    borderColor: "#4A7FE8",
+  },
 
   toggleInner: {
     width: 16,
@@ -288,36 +296,34 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
 
-  toggleInnerOn: { backgroundColor: "#ffffff", alignSelf: "flex-end" },
+  toggleInnerOn: {
+    alignSelf: "flex-end",
+  },
 
-  privateInfo: { marginTop: 18, fontSize: 11, color: "rgba(255,255,255,0.65)", lineHeight: 16 },
+  privateInfo: {
+    marginTop: 20,
+    fontSize: 11,
+    color: "rgba(255,255,255,0.65)",
+    lineHeight: 14,
+  },
 
   privateCard: {
-  marginTop: 14,
-  borderRadius: 22,
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  backgroundColor: "#071428",
-  height:52,
-
-  // ✅ Border
-  borderWidth: 1,
-  borderColor: "rgba(63,104,255,0.45)",
-
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-
-  // ✅ Light Shadow + Glow
-  shadowColor: "#3F68FF",
-  shadowOffset: { width: 0, height: 3 },
-  shadowOpacity: 0.35,
-  shadowRadius: 6,
-
-  // ✅ Android shadow
-  elevation: 4,
-},
-
+    marginTop: 16,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#071428",
+    borderWidth: 1,
+    borderColor: "rgba(63,104,255,0.45)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#3F68FF",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
 
   privateLeft: { flexDirection: "row", alignItems: "center" },
 
@@ -331,27 +337,44 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  privateTitle: { color: "#ffffff", fontSize: 14, fontWeight: "500" },
+  privateTitle: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
 
-  learnMoreRow: { marginTop: 18, flexDirection: "row", alignItems: "center", alignSelf: "center" },
+  learnMoreRow: {
+    marginTop: 22,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+  },
 
-  learnMoreText: { color: "#9FB4FF", fontSize: 12 },
+  learnMoreText: {
+    color: "#9FB4FF",
+    fontSize: 12,
+    marginRight: 4,
+  },
 
   createButton: {
-    marginTop: 24,
+    marginTop: 28,
     alignSelf: "center",
-    width: 135,
-    height: 52,
-    borderRadius: 15,
-    overflow: "hidden", // Needed for gradient rounding
+    width: 150,
+    height: 54,
+    borderRadius: 16,
+    overflow: "hidden",
   },
 
   gradientButton: {
     flex: 1,
-    borderRadius: 15,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
   },
 
-  createButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
+  createButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });

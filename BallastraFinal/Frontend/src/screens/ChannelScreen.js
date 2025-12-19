@@ -433,7 +433,7 @@ export default function ChatScreen({ navigation }) {
             <View style={styles.headerRight}>
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate("VoiceCall", { contact: { name: "Perfecto" } })
+                  navigation.navigate("VideoCall", { contact: { name: "Perfecto" } })
                 }
               >
                 <Ionicons name="call-outline" size={22} color="#E5E7EB" />
