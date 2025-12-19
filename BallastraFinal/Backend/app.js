@@ -6,8 +6,8 @@ import path from 'path';
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import nexusRoutes from "./routes/nexusRoutes.js";
-//import iconRoutes from "./routes/iconRoutes.js";
-//import inviteRoutes from"./routes/inviteRoutes.js";
+import iconRoutes from "./routes/iconRoutes.js";
+import inviteRoutes from"./routes/inviteRoutes.js";
 import membersRoutes from './routes/membersRoutes.js';
 import spacesRoutes from './routes/spacesRoutes.js';
 import discussionRoutes from './routes/discussionRoutes.js';
@@ -20,6 +20,11 @@ import orbitRoutes from "./routes/orbitRoutes.js";
 import callRoutes from "./routes/callRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import textChannelRoutes from "./routes/textChannelRoutes.js";
+import voiceChannelRoutes from "./routes/voiceChannelRoutes.js";
+import textChannelMessageRoutes from "./routes/textChannelMessageRoutes.js";
+import channelPermissionRoutes from "./routes/channelPermissionRoutes.js";
+import moderationRoutes from "./routes/moderationRoutes.js";
 import { initSocket } from './socket/socket.js';
 import { startCleanupJob } from './jobs/cleanupJob.js';
 import http from 'http';
@@ -37,8 +42,8 @@ app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use("/api/user", userRoutes);
 app.use('/api/nexus', nexusRoutes);
-//app.use('/api/nexus/icons', iconRoutes);  // note: iconRoutes has GET '/' - becomes /api/nexus/icons/
-//app.use('/api/invite', inviteRoutes);
+app.use('/api/nexus/icons', iconRoutes);  // note: iconRoutes has GET '/' - becomes /api/nexus/icons/
+app.use('/api/invite', inviteRoutes);
 app.use('/api/members', membersRoutes);
 app.use('/api/spaces', spacesRoutes);
 app.use('/api/discussions', discussionRoutes);
@@ -51,6 +56,14 @@ app.use("/api/orbit", orbitRoutes);
 app.use("/api/call", callRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/channels", textChannelRoutes);
+app.use("/api/channels", voiceChannelRoutes);
+app.use("/api/channels", textChannelMessageRoutes);
+app.use("/api/channels", channelPermissionRoutes);
+app.use("/api/moderation", moderationRoutes);
+
+
+
 
 const PORT = process.env.PORT || 3000;
 

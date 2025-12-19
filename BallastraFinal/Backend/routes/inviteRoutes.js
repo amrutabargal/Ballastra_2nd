@@ -1,10 +1,20 @@
-// Backend/routes/inviteRoutes.js
-const express = require('express');
+import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
+
+import {
+  generateInvite,
+  sendInviteByEmail,
+  acceptInvite,
+  rejectInvite,
+  listPendingInvites
+} from "../controllers/inviteController.js";
+
 const router = express.Router();
-const inviteCtrl = require('../controllers/inviteController');
-const auth = require('../middleware/auth');
 
-router.post('/generate', auth, inviteCtrl.generateInvite); // POST /api/invite/generate
-router.post('/accept', auth, inviteCtrl.acceptInvite);     // POST /api/invite/accept
+router.post("/generate", protect, generateInvite);
+router.post("/send-email", protect, sendInviteByEmail);
+router.post("/accept", protect, acceptInvite);
+router.post("/reject", protect, rejectInvite);
+router.get("/pending", protect, listPendingInvites);
 
-module.exports = router;
+export default router;

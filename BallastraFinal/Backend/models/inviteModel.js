@@ -1,10 +1,10 @@
-const pool = require('../config/db');
+import pool from "../config/db.js";
 
-export async function generateInvite(nexusId, code, invitedBy, expiresAt=null) {
-  const q = `INSERT INTO invites (nexus_id, code, invited_by, expires_at) VALUES ($1,$2,$3,$4) RETURNING *`;
-  const { rows } = await pool.query(q, [nexusId, code, invitedBy, expiresAt]);
-  return rows[0];
-}
+// export async function generateInvite(nexusId, code, invitedBy, expiresAt=null) {
+//   const q = `INSERT INTO invites (nexus_id, code, invited_by, expires_at) VALUES ($1,$2,$3,$4) RETURNING *`;
+//   const { rows } = await pool.query(q, [nexusId, code, invitedBy, expiresAt]);
+//   return rows[0];
+// }
 
 export async function getInviteByCode(code) {
   const { rows } = await pool.query('SELECT * FROM invites WHERE code=$1', [code]);

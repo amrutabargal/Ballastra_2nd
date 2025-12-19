@@ -3,11 +3,33 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import * as messageModel from "../models/messageModel.js";
 import * as reactionModel from "../models/reactionModel.js";
+import * as moderationModel from "../models/moderationModel.js";
 import * as chatModel from "../models/chatModel.js";
 import * as userModel from "../models/userModel.js"; // for presence last_seen
 
 // track online users
-const onlineUsers = new Map();  // userId -> socketId
+const onlineUsers = new Map();  // userId -> 
+
+// voice states: channelId -> Map(userId -> state)
+const voiceStates = new Map();
+function getVoiceState(channelId, userId) {
+  if (!voiceStates.has(channelId)) {
+    voiceStates.set(channelId, new Map());
+  }
+
+  const channelMap = voiceStates.get(channelId);
+
+  if (!channelMap.has(userId)) {
+    channelMap.set(userId, {
+      muted: false,
+      deafened: false,
+      adminMuted: false
+    });
+  }
+
+  return channelMap.get(userId);
+}
+
 
 export function initSocket(httpServer, { corsOrigin = "*" } = {}) {
   const io = new Server(httpServer, {
@@ -171,11 +193,143 @@ export function initSocket(httpServer, { corsOrigin = "*" } = {}) {
       }
     });
 
+    // TEXT CHANNEL JOIN / LEAVE
+    // -------------------------------
+    socket.on("join_channel", ({ channelId }) => {
+      socket.join(`channel:${channelId}`);
+    });
+
+    socket.on("leave_channel", ({ channelId }) => {
+      socket.leave(`channel:${channelId}`);
+    });
+
+    // VOICE CHANNEL JOIN / LEAVE
+    // -------------------------------
+    socket.on("join_voice_channel", async ({ channelId }) => {
+      const channel = await channelModel.getChannelById(channelId);
+      const settings = channel?.settings || {};
+
+      const timeout = await moderationModel.getActiveTimeout(
+        channel.nexus_id,
+        userId
+      );
+      if (timeout) return;
+      
+    
+      if (settings.locked) return;
+    
+      socket.join(`voice:${channelId}`);
+      socket.to(`voice:${channelId}`).emit("voice_user_joined", { userId });
+    });
+    
+
+    socket.on("leave_voice_channel", ({ channelId }) => {
+      socket.leave(`voice:${channelId}`);
+      // cleanup voice state
+      if (voiceStates.has(channelId)) {
+        voiceStates.get(channelId).delete(userId);
+      }
+      socket.to(`voice:${channelId}`).emit("voice_user_left", {
+        userId
+      });
+    });
+
+    // VIDEO TOGGLE (DISCORD STYLE)
+    // -------------------------------
+    socket.on("video_toggle", ({ channelId, enabled }) => {
+      socket.to(`voice:${channelId}`).emit("video_toggle", {
+        userId,
+        enabled
+      });
+    });
+
+    // start screen share
+    socket.on("screen_share_start", ({ channelId }) => {
+      socket.to(`voice:${channelId}`).emit("screen_share_started", {
+        userId
+      });
+    });
+
+    // stop screen share
+    socket.on("screen_share_stop", ({ channelId }) => {
+      socket.to(`voice:${channelId}`).emit("screen_share_stopped", {
+        userId
+      });
+    });
+
+    // USER MUTE / UNMUTE
+    // -------------------------------
+    socket.on("voice_mute", ({ channelId, muted }) => {
+      const state = getVoiceState(channelId, userId);
+      state.muted = muted;
+
+      socket.to(`voice:${channelId}`).emit("voice_user_muted", {
+        userId,
+        muted
+      });
+    });
+
+    // USER DEAFEN / UNDEAFEN
+    // -------------------------------
+    socket.on("voice_deafen", ({ channelId, deafened }) => {
+      const state = getVoiceState(channelId, userId);
+      state.deafened = deafened;
+
+      socket.to(`voice:${channelId}`).emit("voice_user_deafened", {
+        userId,
+        deafened
+      });
+    });
+
+
+    // ADMIN MUTE / UNMUTE
+    // -------------------------------
+    socket.on("voice_admin_mute", ({ channelId, targetUserId, muted }) => {
+      const channelMap = voiceStates.get(channelId);
+      if (!channelMap) return;
+
+      const targetState = getVoiceState(channelId, targetUserId);
+      targetState.adminMuted = muted;
+
+      io.to(`voice:${channelId}`).emit("voice_admin_muted", {
+        userId: targetUserId,
+        muted
+      });
+    });
+    
+    //Block video if disabled
+    socket.on("video_toggle", async ({ channelId, enabled }) => {
+      const channel = await channelModel.getChannelById(channelId);
+      const settings = channel?.settings || {};
+    
+      if (!settings.videoEnabled && enabled) return;
+    
+      socket.to(`voice:${channelId}`).emit("video_toggle", {
+        userId,
+        enabled
+      });
+    });
+
+    //Block screen sharing if disabled
+    socket.on("screen_share_start", async ({ channelId }) => {
+      const channel = await channelModel.getChannelById(channelId);
+      const settings = channel?.settings || {};
+    
+      if (!settings.screenShareEnabled) return;
+    
+      socket.to(`voice:${channelId}`).emit("screen_share_started", {
+        userId
+      });
+    });
+    
+
     // -------------------------------
     // DISCONNECT
     // -------------------------------
     socket.on("disconnect", async () => {
       onlineUsers.delete(userId);
+      // 🔊 cleanup voice states for ALL channels
+      voiceStates.forEach((map) => map.delete(userId));
 
       await userModel.updateUser(userId, {
         is_online: false,

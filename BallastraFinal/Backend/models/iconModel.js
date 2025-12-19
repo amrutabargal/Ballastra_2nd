@@ -7,13 +7,15 @@ export async function listIcons() {
   return rows;
 }
 
-export async function createIcon(filename, display_name = null, uploaded_by = null) {
-  const query = `
+export async function createIcon(filename, display_name, uploaded_by) {
+  const { rows } = await pool.query(
+    `
     INSERT INTO nexus_icons (filename, display_name, uploaded_by)
     VALUES ($1, $2, $3)
     RETURNING *
-  `;
+    `,
+    [filename, display_name, uploaded_by]
+  );
 
-  const { rows } = await pool.query(query, [filename, display_name, uploaded_by]);
   return rows[0];
 }

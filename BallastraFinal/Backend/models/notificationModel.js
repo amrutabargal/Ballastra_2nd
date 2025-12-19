@@ -1,20 +1,45 @@
-// Backend/models/notificationModel.js
-import pool from '../config/db.js';
+import db from "../config/db.js";
 
-export async function listNotifications(userId, limit=50) {
-  const q = `SELECT * FROM notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2`;
-  const { rows } = await pool.query(q, [userId, limit]);
+export const createNotification = async (data) => {
+  const query = `
+    INSERT INTO notifications
+    (id, user_id, type, purpose, source, is_read)
+    VALUES (gen_random_uuid(), $1, $2, $3, $4, false)
+    RETURNING *`;
+  const values = [
+    data.user_id,
+    data.type,
+    data.purpose,
+    data.source
+  ];
+  const { rows } = await db.query(query, values);
+  return rows[0];
+};
+
+export const getUserNotifications = async (userId, limit = 20) => {
+  const { rows } = await db.query(
+    `SELECT * FROM notifications
+     WHERE user_id=$1
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [userId, limit]
+  );
   return rows;
-}
+};
 
-export async function markRead(notificationId) {
-  const q = `UPDATE notifications SET is_read = true WHERE id=$1 RETURNING *`;
-  const { rows } = await pool.query(q, [notificationId]);
-  return rows[0];
-}
+export const markAsRead = async (id, userId) => {
+  await db.query(
+    `UPDATE notifications SET is_read=true
+     WHERE id=$1 AND user_id=$2`,
+    [id, userId]
+  );
+};
 
-export async function createNotification(userId, type, payload = {}) {
-  const q = `INSERT INTO notifications (user_id, type, payload) VALUES ($1,$2,$3) RETURNING *`;
-  const { rows } = await pool.query(q, [userId, type, payload]);
-  return rows[0];
-}
+export const markAllRead = async (userId) => {
+  await db.query(
+    `UPDATE notifications SET is_read=true
+     WHERE user_id=$1`,
+    [userId]
+  );
+};
+
