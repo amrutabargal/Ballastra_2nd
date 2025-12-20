@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   View,
@@ -43,16 +42,16 @@ export default function CreateCategoryScreen({ navigation }) {
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  /* ✅ CLOSE HANDLER – 100% SAFE */
+  /* ✅ CLOSE BUTTON – SAFE */
   const handleClose = () => {
     if (navigation?.canGoBack()) {
-      navigation.goBack(); // ✅ screen close
+      navigation.goBack();
     } else {
-      navigation.navigate('Home'); // fallback
+      navigation.navigate('Home');
     }
   };
 
-  /* ✅ CREATE HANDLER */
+  /* ✅ CREATE BUTTON – WORKING */
   const handleCreate = () => {
     if (!categoryName.trim()) {
       Alert.alert('Error', 'Please enter a category name');
@@ -63,8 +62,11 @@ export default function CreateCategoryScreen({ navigation }) {
 
     setTimeout(() => {
       setLoading(false);
-      Alert.alert('Success', `Category "${categoryName}" created successfully!`);
-      handleClose();
+      Alert.alert(
+        'Success',
+        `Category "${categoryName}" created successfully!`,
+        [{ text: 'OK', onPress: handleClose }]
+      );
     }, 1500);
   };
 
@@ -72,7 +74,7 @@ export default function CreateCategoryScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#07152C" />
 
-      {/* ⭐ HEADER */}
+      {/* HEADER */}
       <View style={styles.headerRow}>
         <TouchableOpacity
           style={styles.closeButton}
@@ -85,7 +87,7 @@ export default function CreateCategoryScreen({ navigation }) {
         <Text style={styles.headerTitle}>Start a Category</Text>
       </View>
 
-      {/* Input */}
+      {/* INPUT */}
       <Text style={styles.label}>Category name</Text>
       <TextInput
         style={styles.input}
@@ -95,12 +97,12 @@ export default function CreateCategoryScreen({ navigation }) {
         onChangeText={setCategoryName}
       />
 
-      {/* Info */}
+      {/* INFO */}
       <Text style={styles.infoText}>
         Private Spaces are visible only to people you choose. Everyone else won't see them at all.
       </Text>
 
-      {/* 🔒 Private Switch */}
+      {/* PRIVATE SWITCH */}
       <View style={styles.switchRow}>
         <View style={styles.switchLeft}>
           <LockSVG />
@@ -112,15 +114,19 @@ export default function CreateCategoryScreen({ navigation }) {
           onValueChange={setIsPrivate}
           thumbColor={isPrivate ? '#3B82F6' : '#ffffff'}
           trackColor={{ false: '#64748B', true: '#2563EB' }}
+          style={{
+            alignSelf: 'center',
+            transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
+          }}
         />
       </View>
 
-      {/* Learn more */}
+      {/* LEARN MORE */}
       <Text style={styles.learnMoreText}>
         Learn more about Space Modes →
       </Text>
 
-      {/* Create Button */}
+      {/* CREATE BUTTON */}
       <TouchableOpacity
         style={styles.buttonWrapper}
         activeOpacity={0.85}
@@ -144,7 +150,7 @@ export default function CreateCategoryScreen({ navigation }) {
   );
 }
 
-/* 🎨 STYLES */
+/* 🎨 STYLES (UNCHANGED) */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -212,7 +218,7 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 16,
     paddingHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#3154BA',
     shadowColor: '#3154BA',

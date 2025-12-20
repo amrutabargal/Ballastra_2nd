@@ -32,7 +32,7 @@ export default function LoginScreen({ navigation }) {
     try {
       setLoading(true);
 
-      const response = await fetch(`${BASE_URL}/auth/login`, {
+      const response = await fetch(`${BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,22 +77,40 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+      const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
 
+      const responseText = await response.text();
       let data = null;
+
       try {
-        data = await response.json();
-      } catch {
-        data = null;
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        if (responseText.trim().startsWith("<")) {
+          return Alert.alert(
+            "Server Error",
+            `The server returned an error page (Status: ${response.status})`
+          );
+        }
+        return Alert.alert(
+          "Error",
+          `Invalid response from server (Status: ${response.status})`
+        );
       }
 
       if (!response.ok) {
@@ -102,13 +120,20 @@ export default function LoginScreen({ navigation }) {
         );
       }
 
+      // Store email for OTP verification
+      await AsyncStorage.setItem("resetEmail", email.trim().toLowerCase());
+
       Alert.alert(
         "Success",
         data?.message || "OTP has been sent to your email.",
         [
           {
             text: "OK",
-            onPress: () => navigation.navigate("ResetPasswordScreen"), // ✅ Changed here
+            onPress: () =>
+              navigation.navigate("VerifyOtp", {
+                purpose: "password_reset",
+                email: email.trim().toLowerCase(),
+              }),
           },
         ]
       );

@@ -180,7 +180,7 @@
 //     fontWeight: "500",
 //   },
 // });
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -191,14 +191,38 @@ import {
   ImageBackground,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { BASE_URL } from "../config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
-export default function V4({ navigation }) {
+export default function V4({ navigation, route }) {
   const [code, setCode] = useState(["", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const inputs = useRef([]);
+
+  // Get purpose and email from route params or AsyncStorage
+  const purpose = route?.params?.purpose || "signup"; // "signup" or "password_reset"
+  const [email, setEmail] = useState(route?.params?.email || "");
+
+  useEffect(() => {
+    // If email not in params, get from AsyncStorage
+    const getEmail = async () => {
+      if (!email) {
+        const storedEmail =
+          (await AsyncStorage.getItem("signupEmail")) ||
+          (await AsyncStorage.getItem("resetEmail"));
+        if (storedEmail) {
+          setEmail(storedEmail);
+        }
+      }
+    };
+    getEmail();
+  }, []);
 
   const handleChange = (text, index) => {
     if (!/^\d?$/.test(text)) return;
@@ -212,14 +236,161 @@ export default function V4({ navigation }) {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (code.join("").length !== 4) {
-      Alert.alert("Error", "Please enter verification code");
+      Alert.alert("Error", "Please enter the complete 4-digit verification code");
       return;
     }
 
-    // ✅ ONLY CHANGE: navigate to v55
-    navigation.navigate("CreateAccountSuccesfully");
+    if (!email) {
+      Alert.alert("Error", "Email not found. Please try again.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const otpCode = code.join("");
+
+      let endpoint = "";
+      if (purpose === "signup") {
+        endpoint = `${BASE_URL}/api/auth/verify-signup-otp`;
+      } else {
+        endpoint = `${BASE_URL}/api/auth/verify-otp`;
+      }
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          code: otpCode,
+        }),
+      });
+
+      const responseText = await response.text();
+      let data = null;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        if (responseText.trim().startsWith("<")) {
+          return Alert.alert(
+            "Server Error",
+            `The server returned an error page (Status: ${response.status})`
+          );
+        }
+        return Alert.alert(
+          "Error",
+          `Invalid response from server (Status: ${response.status})`
+        );
+      }
+
+      if (!response.ok) {
+        return Alert.alert(
+          "Verification Failed",
+          data?.message || "Invalid or expired OTP. Please try again."
+        );
+      }
+
+      // If signup verification, store token and user
+      if (purpose === "signup" && data?.token) {
+        await AsyncStorage.setItem("token", data.token);
+        if (data?.user) {
+          await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        }
+        await AsyncStorage.removeItem("signupEmail");
+
+        Alert.alert(
+          "Success",
+          data?.message || "Account verified successfully!",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.replace("Loginscreen"),
+            },
+          ]
+        );
+      } else {
+        // Password reset OTP verification - navigate to reset password screen
+        await AsyncStorage.setItem("resetEmail", email);
+        await AsyncStorage.setItem("resetToken", otpCode);
+
+        Alert.alert(
+          "Success",
+          data?.message || "OTP verified successfully!",
+          [
+            {
+              text: "OK",
+              onPress: () =>
+                navigation.navigate("ResetPasswordScreen", {
+                  email,
+                  token: otpCode,
+                }),
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      Alert.alert(
+        "Error",
+        "Unable to connect to server. Please check your internet connection and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      Alert.alert("Error", "Email not found. Please try again.");
+      return;
+    }
+
+    try {
+      setResending(true);
+
+      if (purpose === "signup") {
+        Alert.alert(
+          "Info",
+          "Please go back and create account again to resend OTP."
+        );
+        return;
+      } else {
+        // For password reset, call forgot-password
+        const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        });
+
+        const responseText = await response.text();
+        let data = null;
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = null;
+        }
+
+        if (response.ok) {
+          Alert.alert(
+            "Success",
+            data?.message || "OTP has been resent to your email."
+          );
+        } else {
+          Alert.alert("Error", data?.message || "Failed to resend OTP.");
+        }
+      }
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      Alert.alert("Error", "Unable to connect to server. Please try again.");
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -262,19 +433,29 @@ export default function V4({ navigation }) {
           ))}
         </View>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleResend} disabled={resending}>
           <Text style={styles.resend}>
-            If you don’t receive a code ?{" "}
-            <Text style={styles.resendLink}>Resend</Text>
+            If you don't receive a code ?{" "}
+            <Text style={styles.resendLink}>
+              {resending ? "Resending..." : "Resend"}
+            </Text>
           </Text>
         </TouchableOpacity>
 
-        <Text style={styles.loading}>⌛ Loading</Text>
+        {loading && <Text style={styles.loading}>⌛ Verifying...</Text>}
       </View>
 
       {/* Verify Button */}
-      <TouchableOpacity style={styles.nextBtn} onPress={handleVerify}>
-        <Text style={styles.nextText}>Verify</Text>
+      <TouchableOpacity
+        style={[styles.nextBtn, loading && { opacity: 0.7 }]}
+        onPress={handleVerify}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.nextText}>Verify</Text>
+        )}
       </TouchableOpacity>
     </ImageBackground>
   );

@@ -158,14 +158,14 @@ export default function SigninUp({ navigation }) {
         throw new Error("No identity token from Apple");
       }
 
-      // तुझ्या backend ला call: appleLogin controller
-      const res = await axios.post(`${BASE_URL}/apple-login`, {
+      // Call backend appleLogin controller
+      const res = await axios.post(`${BASE_URL}/api/auth/apple-login`, {
         id_token: credential.identityToken,
       });
 
       const { token, user, message } = res.data || {};
 
-      // token/user मिळाला तर store कर
+      // Store token and user data
       if (token) {
         await AsyncStorage.setItem("token", token);
       }
@@ -174,7 +174,8 @@ export default function SigninUp({ navigation }) {
       }
 
       Alert.alert("Success", message || "Apple login success");
-      navigation.replace("GoogleLogin"); // logged in user flow
+      // Navigate to home after successful login
+      navigation.replace("Home");
     } catch (err) {
       console.log("Apple login error:", err?.response?.data || err?.message);
       Alert.alert("Apple Login Failed", "Something went wrong, please try again.");

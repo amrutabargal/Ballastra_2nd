@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,15 @@ import {
   TextInput,
   Switch,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
-const API_BASE_URL = "http://192.168.1.5:3000/api/nexus";
+import { BASE_URL } from "../config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+const API_BASE_URL = `${BASE_URL}/api/nexus`;
 
 export default function Nexus_Overview({ navigation, route }) {
   const nexusId = route?.params?.nexusId;
@@ -33,11 +36,99 @@ export default function Nexus_Overview({ navigation, route }) {
   const [showUsernameChanges, setShowUsernameChanges] = useState(true);
 
   const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (nexusId) {
+      fetchNexusDetails();
+    } else {
+      setLoading(false);
+    }
+  }, [nexusId]);
+
+  const fetchNexusDetails = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      
+      if (!token) {
+        Alert.alert("Error", "Please login");
+        navigation.navigate("Loginscreen");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/${nexusId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data?.message || "Failed to fetch nexus details");
+        return;
+      }
+
+      if (data?.success && data?.data) {
+        const nexus = data.data;
+        setNexusName(nexus.name || initialName);
+        // Set other fields from nexus data if needed
+      }
+    } catch (error) {
+      console.error("Fetch nexus error:", error);
+      Alert.alert("Error", "Failed to load nexus details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBack = () => navigation.goBack();
 
-  const handleSave = () => {
-    Alert.alert("Saved", "Settings saved successfully.");
+  const handleSave = async () => {
+    if (!nexusId) {
+      Alert.alert("Error", "Missing Nexus ID");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const token = await AsyncStorage.getItem("token");
+      
+      if (!token) {
+        Alert.alert("Error", "Please login");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/${nexusId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: nexusName.trim(),
+          // Add other fields you want to update
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data?.message || "Failed to update nexus");
+        return;
+      }
+
+      Alert.alert("Success", "Nexus updated successfully!");
+    } catch (error) {
+      console.error("Update nexus error:", error);
+      Alert.alert("Error", "Failed to update nexus. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -55,23 +146,48 @@ export default function Nexus_Overview({ navigation, route }) {
   const deleteNexusFromServer = async () => {
     if (!nexusId) return Alert.alert("Error", "Missing Nexus ID");
 
-    try {
-      setDeleting(true);
+    Alert.alert(
+      "Delete Nexus",
+      "Are you sure you want to delete this nexus? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeleting(true);
+              const token = await AsyncStorage.getItem("token");
+              
+              if (!token) {
+                Alert.alert("Error", "Please login");
+                return;
+              }
 
-      const res = await fetch(`${API_BASE_URL}/${nexusId}`, { method: "DELETE" });
-      const json = await res.json();
+              const res = await fetch(`${API_BASE_URL}/${nexusId}`, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              const json = await res.json();
 
       if (!json.success) {
         Alert.alert("Error", json.message || "Delete failed");
         return;
       }
 
-      Alert.alert("Deleted", "Nexus deleted", [{ text: "OK", onPress: () => navigation.goBack() }]);
-    } catch (e) {
-      Alert.alert("Network Error", "Could not delete Nexus.");
-    } finally {
-      setDeleting(false);
-    }
+              Alert.alert("Deleted", "Nexus deleted", [{ text: "OK", onPress: () => navigation.goBack() }]);
+            } catch (e) {
+              Alert.alert("Network Error", "Could not delete Nexus.");
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const selectOption = (title, setter, values) => {
@@ -231,8 +347,16 @@ export default function Nexus_Overview({ navigation, route }) {
         </TouchableOpacity>
 
         {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveLabel}>Save</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, saving && styles.saveButtonDisabled]} 
+          onPress={handleSave}
+          disabled={saving || loading}
+        >
+          {saving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.saveLabel}>Save</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleReset}>

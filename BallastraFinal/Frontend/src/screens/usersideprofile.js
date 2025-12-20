@@ -14,13 +14,13 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
-export default function ProfileAdminScreen() {
+export default function UserProfileScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" />
 
-      {/* 🔹 HEADER */}
-      <View style={styles.header}>
+      {/* 🔹 HEADER IMAGE */}
+      <View style={styles.headerWrap}>
         <Image
           source={require("../../assets/profile card.jpg")}
           style={styles.headerImage}
@@ -33,25 +33,17 @@ export default function ProfileAdminScreen() {
 
         {/* Title */}
         <Text style={styles.headerTitle}>Shusshi Clan</Text>
-
-        {/* Settings */}
-        <TouchableOpacity style={styles.settingBtn}>
-          <Ionicons name="settings-outline" size={20} color="#fff" />
-        </TouchableOpacity>
       </View>
 
-      {/* 🔹 PROFILE */}
-      <View style={styles.profileWrap}>
+      {/* 🔹 PROFILE SECTION */}
+      <View style={styles.profileSection}>
         <View style={styles.avatarRing}>
           <Image
-            source={{ uri: "https://i.imgur.com/7k12EPD.png" }}
+            source={{
+              uri: "https://i.imgur.com/7k12EPD.png",
+            }}
             style={styles.avatar}
           />
-
-          {/* Camera icon */}
-          <View style={styles.cameraIcon}>
-            <Ionicons name="camera-outline" size={14} color="#fff" />
-          </View>
         </View>
 
         <Text style={styles.name}>Shusshi Clan</Text>
@@ -64,11 +56,21 @@ export default function ProfileAdminScreen() {
 
         <Text style={styles.username}>@shusshiclan</Text>
 
-        {/* 🔹 MANAGE PROFILE BUTTON */}
-        <TouchableOpacity style={styles.manageBtn}>
-          <Ionicons name="pencil-outline" size={16} color="#fff" />
-          <Text style={styles.manageText}>Manage Profile</Text>
-        </TouchableOpacity>
+        {/* 🔹 ACTION BUTTONS */}
+        <View style={styles.actionRow}>
+          <ActionBtn
+            icon="person-add-outline"
+            label="Add Orbits"
+            color="#3B82F6"
+          />
+          <ActionBtn
+            icon="chatbubble-outline"
+            label="Chat"
+            color="#2563EB"
+          />
+          <ActionBtn icon="information-circle-outline" label="Info" />
+          <ActionBtn icon="ban-outline" label="Block" danger />
+        </View>
       </View>
 
       {/* 🔹 BOTTOM TAB */}
@@ -76,10 +78,11 @@ export default function ProfileAdminScreen() {
         colors={["transparent", "#020617"]}
         style={styles.bottomBar}
       >
-        <Tab icon="home-outline" label="Home" />
-        <Tab icon="chatbubble-outline" label="Chat" />
-        <Tab icon="notifications-outline" label="Notifications" />
-        <Tab
+        <BottomTab icon="home-outline" label="Home" />
+        <BottomTab icon="chatbubble-outline" label="Chat" />
+        <BottomTab icon="notifications-outline" label="Notifications" />
+        <BottomTab
+          icon="person-circle"
           label="You"
           active
           avatar
@@ -89,8 +92,30 @@ export default function ProfileAdminScreen() {
   );
 }
 
-/* ---------- TAB COMPONENT ---------- */
-const Tab = ({ icon, label, active, avatar }) => (
+/* ---------- SMALL COMPONENTS ---------- */
+
+const ActionBtn = ({ icon, label, color, danger }) => (
+  <TouchableOpacity style={styles.actionBtn}>
+    <View
+      style={[
+        styles.actionIcon,
+        danger && { backgroundColor: "#2A0E0E" },
+        color && { backgroundColor: color },
+      ]}
+    >
+      <Ionicons
+        name={icon}
+        size={18}
+        color={danger ? "#EF4444" : "#fff"}
+      />
+    </View>
+    <Text style={[styles.actionLabel, danger && { color: "#EF4444" }]}>
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
+const BottomTab = ({ icon, label, active, avatar }) => (
   <View style={styles.tabItem}>
     {avatar ? (
       <Image
@@ -116,6 +141,7 @@ const Tab = ({ icon, label, active, avatar }) => (
 );
 
 /* ---------- STYLES ---------- */
+
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -123,7 +149,7 @@ const styles = StyleSheet.create({
   },
 
   /* HEADER */
-  header: {
+  headerWrap: {
     height: 240,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -135,13 +161,8 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     position: "absolute",
+    top: 16,
     left: 16,
-    top: 16,
-  },
-  settingBtn: {
-    position: "absolute",
-    right: 16,
-    top: 16,
   },
   headerTitle: {
     position: "absolute",
@@ -153,15 +174,15 @@ const styles = StyleSheet.create({
   },
 
   /* PROFILE */
-  profileWrap: {
+  profileSection: {
     alignItems: "center",
     paddingHorizontal: 24,
-    marginTop: -42,
+    marginTop: -40,
   },
   avatarRing: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     backgroundColor: "#22C55E",
     alignItems: "center",
     justifyContent: "center",
@@ -170,19 +191,6 @@ const styles = StyleSheet.create({
     width: 78,
     height: 78,
     borderRadius: 39,
-  },
-  cameraIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: "#3B82F6",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#020617",
   },
   name: {
     marginTop: 12,
@@ -203,21 +211,30 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
   },
 
-  /* MANAGE BUTTON */
-  manageBtn: {
+  /* ACTIONS */
+  actionRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 22,
-    backgroundColor: "#2563EB",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 14,
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 24,
   },
-  manageText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "500",
+  actionBtn: {
+    alignItems: "center",
+    width: width / 4 - 16,
+  },
+  actionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#1E293B",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionLabel: {
+    marginTop: 6,
+    fontSize: 10,
+    color: "#E5E7EB",
+    textAlign: "center",
   },
 
   /* BOTTOM BAR */

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,20 +10,41 @@ import {
   ImageBackground,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { BASE_URL } from "../config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
-export default function V4({ navigation }) {
+export default function V4({ navigation, route }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [secure1, setSecure1] = useState(true);
   const [secure2, setSecure2] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState(route?.params?.token || "");
 
-  const handleReset = () => {
+  useEffect(() => {
+    // Get token from AsyncStorage if not in params
+    const getStoredData = async () => {
+      if (!token) {
+        const storedToken = await AsyncStorage.getItem("resetToken");
+        if (storedToken) setToken(storedToken);
+      }
+    };
+    getStoredData();
+  }, []);
+
+  const handleReset = async () => {
     if (!password || !confirmPassword) {
       Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert("Error", "Password must be at least 8 characters");
       return;
     }
 
@@ -32,8 +53,71 @@ export default function V4({ navigation }) {
       return;
     }
 
-    // success → go to login / home
-    navigation.replace("Loginscreen");
+    if (!token) {
+      Alert.alert("Error", "Reset token not found. Please request a new password reset.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token,
+          newPassword: password,
+          confirmPassword,
+        }),
+      });
+
+      const responseText = await response.text();
+      let data = null;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        if (responseText.trim().startsWith("<")) {
+          return Alert.alert(
+            "Server Error",
+            `The server returned an error page (Status: ${response.status})`
+          );
+        }
+        return Alert.alert(
+          "Error",
+          `Invalid response from server (Status: ${response.status})`
+        );
+      }
+
+      if (!response.ok) {
+        return Alert.alert(
+          "Reset Failed",
+          data?.message || "Invalid or expired reset link. Please request a new one."
+        );
+      }
+
+      // Clear stored reset data
+      await AsyncStorage.removeItem("resetToken");
+      await AsyncStorage.removeItem("resetEmail");
+
+      Alert.alert(
+        "Success",
+        data?.message || "Password reset successful!",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.replace("Loginscreen"),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Reset password error:", error);
+      Alert.alert("Error", "Unable to connect to server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,8 +193,16 @@ export default function V4({ navigation }) {
           </View>
 
           {/* Button */}
-          <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-            <Text style={styles.resetText}>Reset Password</Text>
+          <TouchableOpacity
+            style={[styles.resetBtn, loading && { opacity: 0.7 }]}
+            onPress={handleReset}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.resetText}>Reset Password</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>

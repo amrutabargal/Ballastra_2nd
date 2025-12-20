@@ -3,6 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import './config/db.js';
 import path from 'path';
+import cors from 'cors';
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import nexusRoutes from "./routes/nexusRoutes.js";
@@ -25,6 +26,7 @@ import voiceChannelRoutes from "./routes/voiceChannelRoutes.js";
 import textChannelMessageRoutes from "./routes/textChannelMessageRoutes.js";
 import channelPermissionRoutes from "./routes/channelPermissionRoutes.js";
 import moderationRoutes from "./routes/moderationRoutes.js";
+import storyRoutes from "./routes/storyRoutes.js";
 import { initSocket } from './socket/socket.js';
 import { startCleanupJob } from './jobs/cleanupJob.js';
 import http from 'http';
@@ -33,9 +35,38 @@ import http from 'http';
 dotenv.config();
 const app = express();
 
+// Enable CORS for all routes
+app.use(cors({
+  origin: '*', // Allow all origins (for development)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 app.use(express.json());
 
+// Root endpoint for testing
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Ballastra Backend API is running',
+    endpoints: {
+      auth: '/api/auth',
+      health: '/api/health'
+    },
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running', 
+    timestamp: new Date().toISOString(),
+    server: 'Ballastra Backend API'
+  });
+});
 
 // serve uploads
 app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -61,6 +92,8 @@ app.use("/api/channels", voiceChannelRoutes);
 app.use("/api/channels", textChannelMessageRoutes);
 app.use("/api/channels", channelPermissionRoutes);
 app.use("/api/moderation", moderationRoutes);
+app.use("/api/stories", storyRoutes);
+
 
 
 

@@ -1,19 +1,21 @@
 import pool from "../config/db.js";
 
-// Find user by email
+// Find user by email (case-insensitive)
 export const findUserByEmail = async (email) => {
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
   const { rows } = await pool.query(
-    'SELECT * FROM users WHERE email = $1 LIMIT 1',
-    [email]
+    'SELECT * FROM users WHERE LOWER(TRIM(email)) = $1 LIMIT 1',
+    [normalizedEmail]
   );
   return rows[0];
 };
 
 
 export const findVerifiedUserByEmail = async (email) => {
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
   const { rows } = await pool.query(
-    'SELECT * FROM users WHERE email = $1 AND is_verified = true LIMIT 1',
-    [email]
+    'SELECT * FROM users WHERE LOWER(TRIM(email)) = $1 AND is_verified = true LIMIT 1',
+    [normalizedEmail]
   );
   return rows[0];
 };

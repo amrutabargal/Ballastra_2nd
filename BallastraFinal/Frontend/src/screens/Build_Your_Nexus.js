@@ -1,8 +1,3 @@
-
-
-
-
-
 import React, { useState } from "react";
 import {
   View,
@@ -11,20 +6,40 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  FlatList,
   StatusBar,
   Image,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../config";
 
 export default function BuildNexusScreen({ navigation }) {
   const [selectedEmoji, setSelectedEmoji] = useState("🤠");
   const [avatarImage, setAvatarImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [nexusName, setNexusName] = useState("");
+  const [description, setDescription] = useState(""); // ✅ NEW
+  const [loading, setLoading] = useState(false);
 
-  const EMOJIS = ["🤠","😎","👑","🔥","⚡","🌟","🚀","🐉","🎯","🌐","🎮","🧠","🤖","💎","💫","🍀","🏆","🐺","🦁","🐯"];
+  const ICON_OPTIONS = [
+    { type: "add", id: "add" },
+    { type: "emoji", emoji: "🏀", bgColor: "#00E5FF" },
+    { type: "emoji", emoji: "🌍", bgColor: "#00E5FF" },
+    { type: "image", image: require("../../assets/avatar1.png"), bgColor: "#FF00FF" },
+    { type: "emoji", emoji: "🏀", bgColor: "#00E5FF" },
+    { type: "emoji", emoji: "🏀", bgColor: "#00E5FF" },
+    { type: "emoji", emoji: "🌍", bgColor: "#00E5FF" },
+    { type: "image", image: require("../../assets/avatar1.png"), bgColor: "#FF00FF" },
+    { type: "image", image: require("../../assets/avatar1.png"), bgColor: "#FF00FF" },
+    { type: "emoji", emoji: "🏀", bgColor: "#00E5FF" },
+    { type: "emoji", emoji: "🌍", bgColor: "#00E5FF" },
+    { type: "image", image: require("../../assets/avatar1.png"), bgColor: "#FF00FF" },
+  ];
+
+  const [currentPage, setCurrentPage] = useState(0);
 
   const pickFromGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -39,30 +54,93 @@ export default function BuildNexusScreen({ navigation }) {
     }
   };
 
-  const handleCreateNexus = () => {
-    if (!nexusName.trim()) return;
+  const handleCreateNexus = async () => {
+    if (!nexusName.trim()) {
+      Alert.alert("Error", "Please enter a nexus name");
+      return;
+    }
 
-    navigation.navigate("Share_Profile", {
-      name: nexusName,
-      icon: selectedEmoji,
-      image: avatarImage,
-    });
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      
+      if (!token) {
+        Alert.alert("Error", "Please login to create a nexus");
+        navigation.navigate("Loginscreen");
+        return;
+      }
+
+      // Prepare icon - use emoji or image URL
+      let iconValue = selectedEmoji;
+      if (avatarImage) {
+        // If image is selected, you might want to upload it first
+        // For now, we'll use the emoji as icon
+        iconValue = selectedEmoji;
+      }
+
+      const response = await fetch(`${BASE_URL}/api/nexus`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: nexusName.trim(),
+          description: description.trim() || "",
+          icon: iconValue,
+          type: "community", // Default type
+          is_public: false, // Default to private
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data?.message || "Failed to create nexus");
+        return;
+      }
+
+      if (data?.success && data?.data) {
+        Alert.alert("Success", "Nexus created successfully!", [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate to the created nexus or home
+              navigation.navigate("Home");
+            },
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Create nexus error:", error);
+      Alert.alert("Error", "Failed to create nexus. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Text style={{ color: "#fff", fontSize: 30 }}>‹</Text>
-            </TouchableOpacity>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={{ color: "#fff", fontSize: 30 }}>‹</Text>
+      </TouchableOpacity>
+
       <StatusBar barStyle="light-content" backgroundColor="#0B1527" />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Build Your Nexus</Text>
+
         <Text style={styles.subtitle}>
           Your Nexus is your space. Shape it, name it, and{"\n"}make it yours.
         </Text>
 
-        <TouchableOpacity style={styles.emojiCircle} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.emojiCircle}
+          onPress={() => setModalVisible(true)}
+        >
           {avatarImage ? (
             <Image source={{ uri: avatarImage }} style={styles.avatarImage} />
           ) : (
@@ -72,6 +150,7 @@ export default function BuildNexusScreen({ navigation }) {
 
         <Text style={styles.chooseIcon}>Choose an Icon</Text>
 
+        {/* Nexus Name */}
         <Text style={styles.label}>Nexus Name</Text>
         <TextInput
           style={styles.input}
@@ -81,185 +160,280 @@ export default function BuildNexusScreen({ navigation }) {
           onChangeText={setNexusName}
         />
 
+        {/* ✅ DESCRIPTION SECTION (NEW) */}
+        <Text style={[styles.label, { marginTop: 16 }]}>Description</Text>
+        <TextInput
+          style={[styles.input, styles.descriptionInput]}
+          placeholder="Tell people what this Nexus is about"
+          placeholderTextColor="#BDBDBD"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          textAlignVertical="top"
+        />
+
         <Text style={styles.guideline}>
           By creating a nexus, you agree to ballastra.{" "}
           <Text style={styles.link}>Community Guidelines.</Text>
         </Text>
 
         {/* Create Button */}
-        <TouchableOpacity 
-          style={[styles.createBtn, !nexusName.trim() && styles.createBtnDisabled]} 
+        <TouchableOpacity
+          style={[
+            styles.createBtn,
+            (!nexusName.trim() || loading) && styles.createBtnDisabled,
+          ]}
           onPress={handleCreateNexus}
-          disabled={!nexusName.trim()}
+          disabled={!nexusName.trim() || loading}
         >
-          <Text style={styles.createText}>Create Nexus</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.createText}>Create Nexus</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Emoji / Gallery Modal */}
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalBg}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Choose an Icon</Text>
-
-            <TouchableOpacity style={styles.galleryBtn} onPress={pickFromGallery}>
-              <Text style={styles.galleryText}>📷 Add from Gallery</Text>
-            </TouchableOpacity>
-
-            <FlatList
-              data={EMOJIS}
-              numColumns={5}
-              renderItem={({ item }) => (
+      {/* Icon Picker Modal */}
+      <Modal visible={modalVisible} animationType="fade" transparent>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.iconPickerContainer}>
+            <View style={styles.iconGrid}>
+              {ICON_OPTIONS.map((item, index) => (
                 <TouchableOpacity
-                  style={styles.emojiItem}
+                  key={index}
+                  style={[
+                    styles.iconItem,
+                    item.type === "add" && styles.iconItemAdd,
+                    item.type !== "add" && { backgroundColor: item.bgColor },
+                  ]}
                   onPress={() => {
-                    setSelectedEmoji(item);
-                    setAvatarImage(null);
-                    setModalVisible(false);
+                    if (item.type === "add") {
+                      pickFromGallery();
+                    } else if (item.type === "emoji") {
+                      setSelectedEmoji(item.emoji);
+                      setAvatarImage(null);
+                      setModalVisible(false);
+                    } else if (item.type === "image") {
+                      setAvatarImage(Image.resolveAssetSource(item.image).uri);
+                      setModalVisible(false);
+                    }
                   }}
                 >
-                  <Text style={styles.emojiSelect}>{item}</Text>
+                  {item.type === "add" ? (
+                    <Text style={styles.addIcon}>+</Text>
+                  ) : item.type === "emoji" ? (
+                    <Text style={styles.iconEmoji}>{item.emoji}</Text>
+                  ) : (
+                    <Image source={item.image} style={styles.iconImage} />
+                  )}
                 </TouchableOpacity>
-              )}
-              keyExtractor={(item, index) => index.toString()}
-              contentContainerStyle={styles.emojiGrid}
-            />
+              ))}
+            </View>
 
-            <TouchableOpacity style={styles.closeBtn} onPress={() => setModalVisible(false)}>
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
+            {/* Pagination dots */}
+            <View style={styles.paginationDots}>
+              <View style={[styles.dot, currentPage === 0 && styles.dotActive]} />
+              <View style={[styles.dot, currentPage === 1 && styles.dotActive]} />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
- container: {
+  container: {
     flex: 1,
-    backgroundColor: '#0A0E1A',
+    backgroundColor: "#0C142A",
     paddingHorizontal: 23,
     paddingTop: 60,
-  },  
-  
-  scrollContent: { flexGrow: 1, 
-    paddingTop: 28, 
   },
 
+  scrollContent: {
+    flexGrow: 1,
+    paddingTop: 28,
+  },
 
-  title: { color: "#FFFFFF", 
-    fontSize: 18, 
+  title: {
+    color: "#FFFFFF",
+    fontSize: 18,
     fontWeight: "700",
-     textAlign: "center", 
-     marginBottom: 5
-    },
-
+    textAlign: "center",
+    marginBottom: 5,
+  },
 
   subtitle: {
-     color: "#BDBDBD", fontSize: 12, 
-     textAlign: "center", 
-         fontWeight: "400",
-     lineHeight: 16,
-      marginBottom: 40 
-    },
+    color: "#BDBDBD",
+    fontSize: 12,
+    textAlign: "center",
+    fontWeight: "400",
+    lineHeight: 16,
+    marginBottom: 40,
+  },
 
   emojiCircle: {
-    width: 90, 
-    height: 90, 
-    borderRadius: 55, 
+    width: 90,
+    height: 90,
+    borderRadius: 55,
     backgroundColor: "#8CFFC2",
-    alignSelf: "center", 
-    justifyContent: "center", 
-    alignItems: "center", 
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
   },
 
   backButton: {
-  width: 50,     // ⭐ increase width
-  justifyContent: "start",
-  alignItems: "start",
-},
+    width: 50,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+  },
 
-  emoji: {
-     fontSize: 62 
-    },
+  emoji: { fontSize: 62 },
 
   avatarImage: {
-     width: 110,
-      height: 110,
-       borderRadius: 55 
-      },
-      
-  chooseIcon: { color: "#BDBDBD",
-     textAlign: "center", 
-     fontSize: 12, 
-     marginBottom: 20,
-         fontWeight: "500"
-     },
-     
-  label: { 
-    color: "#FFFFFF", 
-    fontSize: 12, 
-    fontWeight: "500", 
-    marginBottom: 10
-   },
-   
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+  },
+
+  chooseIcon: {
+    color: "#BDBDBD",
+    textAlign: "center",
+    fontSize: 12,
+    marginBottom: 20,
+    fontWeight: "500",
+  },
+
+  label: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+    marginBottom: 10,
+  },
+
   input: {
     backgroundColor: "#3154BA4D",
-     borderRadius: 14,
-      padding: 14,
-       color: "#FFFFFF",
-    fontSize: 12, 
-        fontWeight: "500", 
-    borderWidth: 1, 
+    borderRadius: 14,
+    padding: 14,
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+    borderWidth: 1,
     borderColor: "#3154BA",
   },
 
+  descriptionInput: {
+    height: 132, // ✅ only height added
+  },
+
   guideline: {
-     fontSize: 8, 
-             fontWeight: "500", 
-     color: "#BDBDBD", 
-     marginTop: 10,
-      textAlign: "center", 
-      lineHeight: 18 
-    },
+    fontSize: 8,
+    fontWeight: "500",
+    color: "#BDBDBD",
+    marginTop: 10,
+    textAlign: "center",
+    lineHeight: 18,
+  },
 
-  link: { color: "#3255BA",
-  fontSize: 8, 
-  fontWeight: "500", 
-   },
-
+  link: {
+    color: "#3255BA",
+    fontSize: 8,
+    fontWeight: "500",
+  },
 
   createBtn: {
-  paddingVertical: 12,
-  paddingHorizontal: 25,
-  borderRadius: 14,
-  marginTop: 180,
-  shadowColor: "#030B2466",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.3,
-  shadowRadius: 8,
-  alignSelf: "center",
-  borderWidth: 1, 
-    borderColor: "#3154BA",   
-},
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 14,
+    marginTop: 51,
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#3154BA",
+  },
 
   createBtnDisabled: { opacity: 0.5 },
-  createText: { 
-    color: "#FFFFFF", textAlign: "center",
-     fontSize: 12, 
-     fontWeight: "500" },
-     
-  modalBg: {
-    flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "center", alignItems: "center",
+
+  createText: {
+    color: "#FFFFFF",
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "500",
   },
-  modalBox: { width: "88%", maxHeight: "70%", backgroundColor: "#1E2B47", borderRadius: 24, padding: 24 },
-  modalTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "700", marginBottom: 20, textAlign: "center" },
-  galleryBtn: { backgroundColor: "#2F4E9E", padding: 16, borderRadius: 14, alignItems: "center", marginBottom: 20 },
-  galleryText: { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
-  emojiItem: { flex: 1, padding: 12, alignItems: "center", justifyContent: "center" },
-  emojiSelect: { fontSize: 34 },
-  closeBtn: { marginTop: 16, padding: 16, backgroundColor: "#2A3852", borderRadius: 14 },
-  closeText: { color: "#FFFFFF", textAlign: "center", fontSize: 15, fontWeight: "600" },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  iconPickerContainer: {
+    backgroundColor: "#0C142A",
+    borderRadius: 20,
+    padding: 20,
+    width: "85%",
+  },
+
+  iconGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  iconItem: {
+    width: "30%",
+    aspectRatio: 1,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  iconItemAdd: {
+    backgroundColor: "#1D2A44",
+    borderWidth: 2,
+    borderColor: "#3D4A64",
+    borderStyle: "dashed",
+  },
+
+  addIcon: {
+    color: "#9AA4C7",
+    fontSize: 30,
+    fontWeight: "300",
+  },
+
+  iconEmoji: {
+    fontSize: 40,
+  },
+
+  iconImage: {
+    width: "80%",
+    height: "80%",
+    borderRadius: 50,
+  },
+
+  paginationDots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 8,
+  },
+
+  dot: {
+    width: 20,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#3D4A64",
+  },
+
+  dotActive: {
+    backgroundColor: "#9AA4C7",
+  },
 });

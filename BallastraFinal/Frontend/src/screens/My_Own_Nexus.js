@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
@@ -11,14 +10,27 @@ export default function NexusTypeScreen({ navigation }) {
   return (
     <View style={styles.container}>
 
-      {/* ✅ Proper Back Button */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
-      </TouchableOpacity>
+      {/* 🔹 TOP BAR */}
+      <View style={styles.topBar}>
+        {/* Back Button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* Skip Button */}
+        <TouchableOpacity
+          style={styles.skipTop}
+          onPress={() => navigation.navigate("Build_Your_Nexus")}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.skipTopText}>Skip</Text>
+          <Ionicons name="chevron-forward" size={18} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
 
       {/* Title */}
       <Text style={styles.title}>What kind of Nexus are you building?</Text>
@@ -48,7 +60,7 @@ export default function NexusTypeScreen({ navigation }) {
 
       </View>
 
-      {/* Skip */}
+      {/* Bottom Skip (UNCHANGED) */}
       <TouchableOpacity 
         style={{ marginTop: 40 }} 
         onPress={() => navigation.navigate("Build_Your_Nexus")}
@@ -65,20 +77,37 @@ export default function NexusTypeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020b22',
-    paddingTop: 20,
+    backgroundColor: '#0C142A',
     paddingHorizontal: 20,
   },
 
-  /* ✅ Clean Back Button Style */
+  /* 🔹 TOP BAR */
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 40,
+    marginBottom: 48,
+  },
+
   backButton: {
     width: 22,
     height: 22,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 48,
-    marginTop:40,
+  },
+
+  skipTop: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  skipTopText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+    marginRight: 4,
   },
 
   title: {
@@ -106,18 +135,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    height:44,
+    height: 44,
     borderWidth: 1,
-  borderColor: "#3154BA",
+    marginBottom: 15,
+    borderColor: "#3154BA",
 
-  // ⭐ Shadow for iOS
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.25,
-  shadowRadius: 10,
+    // ⭐ Shadow for iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
 
-  // ⭐ Shadow for Android
-  elevation: 8,
+    // ⭐ Shadow for Android
+    elevation: 8,
   },
 
   optionText: {

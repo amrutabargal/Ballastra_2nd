@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -25,6 +24,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Feather from "react-native-vector-icons/Feather";
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const guidelineBaseWidth = 375;
@@ -120,7 +120,7 @@ export default function ChatScreen({ route, navigation }) {
   const [searchResults, setSearchResults] = useState([]);
   const [emojiSearch, setEmojiSearch] = useState('');
   const EMOJI_LIST = [
-    { e: '😀', n: 'grinning' },{ e: '😂', n: 'joy' },{ e: '😍', n: 'heart_eyes' },{ e: '👍', n: 'thumbs_up' },{ e: '🎉', n: 'tada' },{ e: '😮', n: 'open_mouth' },{ e: '😢', n: 'cry' },{ e: '🔥', n: 'fire' },{ e: '🙏', n: 'pray' },{ e: '🤝', n: 'handshake' },{ e: '😅', n: 'sweat_smile' },{ e: '🤩', n: 'star_struck' },{ e: '😉', n: 'wink' },{ e: '😎', n: 'sunglasses' },{ e: '👏', n: 'clap' },{ e: '🤔', n: 'thinking' }
+    { e: '😀', n: 'grinning' }, { e: '😂', n: 'joy' }, { e: '😍', n: 'heart_eyes' }, { e: '👍', n: 'thumbs_up' }, { e: '🎉', n: 'tada' }, { e: '😮', n: 'open_mouth' }, { e: '😢', n: 'cry' }, { e: '🔥', n: 'fire' }, { e: '🙏', n: 'pray' }, { e: '🤝', n: 'handshake' }, { e: '😅', n: 'sweat_smile' }, { e: '🤩', n: 'star_struck' }, { e: '😉', n: 'wink' }, { e: '😎', n: 'sunglasses' }, { e: '👏', n: 'clap' }, { e: '🤔', n: 'thinking' }
   ];
 
   // Scroll to bottom when new message
@@ -216,7 +216,7 @@ export default function ChatScreen({ route, navigation }) {
             inputRef.current.setNativeProps({
               selection: { start: (name + " ").length, end: (name + " ").length },
             });
-          } catch (e) {}
+          } catch (e) { }
         }
       }, 80);
       return;
@@ -237,7 +237,7 @@ export default function ChatScreen({ route, navigation }) {
             inputRef.current.setNativeProps({
               selection: { start: replyText.length, end: replyText.length },
             });
-          } catch (e) {}
+          } catch (e) { }
         }
       }, 80);
       return;
@@ -330,7 +330,7 @@ export default function ChatScreen({ route, navigation }) {
 
       setMessages(prev => [...prev, newPost]);
       setInputValue('');
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const pickDocument = async () => {
@@ -349,7 +349,7 @@ export default function ChatScreen({ route, navigation }) {
       };
 
       setMessages(prev => [...prev, newMessage]);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const toggleEmoji = () => setEmojiVisible(v => !v);
@@ -401,7 +401,7 @@ export default function ChatScreen({ route, navigation }) {
   const startRecording = () => {
     setIsRecording(true);
     setRecordingTime(0);
-    
+
     // Start recording timer
     recordingTimerRef.current = setInterval(() => {
       setRecordingTime(prev => prev + 1);
@@ -413,7 +413,7 @@ export default function ChatScreen({ route, navigation }) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
     }
-    
+
     if (recordingTime > 0) {
       // Add voice message to chat
       const voiceMessage = {
@@ -425,10 +425,10 @@ export default function ChatScreen({ route, navigation }) {
         text: `Voice message (${recordingTime}s)`,
         duration: recordingTime,
       };
-      
+
       setMessages(prev => [...prev, voiceMessage]);
     }
-    
+
     setIsRecording(false);
     setRecordingTime(0);
   };
@@ -464,7 +464,7 @@ export default function ChatScreen({ route, navigation }) {
           text: replyText,
           time: "Just now",
         };
-        
+
         return {
           ...msg,
           replies: [...(msg.replies || []), newReply]
@@ -476,520 +476,560 @@ export default function ChatScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.root}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-      <StatusBar barStyle="light-content" />
+        <StatusBar barStyle="light-content" />
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#BFD6FF" />
-        </TouchableOpacity>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation?.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#BFD6FF" />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.headerCenter}
-          activeOpacity={0.7}
-          onPress={() => navigation.navigate("Header_media", { channelName: channel })}
-        >
-          <Text style={styles.channelLabel}>{channel}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.headerCenter}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate("Header_media", { channelName: channel })}
+          >
+            <Text style={styles.channelLabel}>{channel}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.searchBtn} onPress={openSearch}>
-          <Feather name="search" size={18} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-
-      {uploading ? (
-        <View style={styles.uploadOverlay} pointerEvents="none">
-          <ActivityIndicator size="large" color="#9fb4ff" />
-          <Text style={styles.uploadText}>Uploading...</Text>
+          <TouchableOpacity style={styles.searchBtn} onPress={openSearch}>
+            <Feather name="search" size={18} color="#ffffff" />
+          </TouchableOpacity>
         </View>
-      ) : null}
 
-      {/* Messages */}
-      <ScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={true}
-        contentContainerStyle={styles.content}
-        onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
-        scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
-      >
-        {messages.map((m) => {
-          if (m.type === "post") {
-            return (
-              <View
-                key={m.id}
-                style={styles.postCard}
-                onLayout={(e) => {
-                  positionsRef.current[m.id] = {
-                    y: e.nativeEvent.layout.y,
-                    height: e.nativeEvent.layout.height,
-                  };
+        {uploading ? (
+          <View style={styles.uploadOverlay} pointerEvents="none">
+            <ActivityIndicator size="large" color="#9fb4ff" />
+            <Text style={styles.uploadText}>Uploading...</Text>
+          </View>
+        ) : null}
+
+        {/* Messages */}
+        <ScrollView
+          ref={scrollViewRef}
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={styles.content}
+          onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={16}
+          keyboardShouldPersistTaps="handled"
+        >
+          {messages.map((m) => {
+            if (m.type === "post") {
+              return (
+                <View
+                  key={m.id}
+                  style={styles.postCard}
+                  onLayout={(e) => {
+                    positionsRef.current[m.id] = {
+                      y: e.nativeEvent.layout.y,
+                      height: e.nativeEvent.layout.height,
+                    };
+                  }}
+                >
+                  {/* Author row */}
+                  <View style={styles.postHeader}>
+                    <Image source={{ uri: m.avatar }} style={styles.postAvatar} />
+                    <View style={styles.postMeta}>
+                      <View style={styles.postMetaRow}>
+                        <Text style={styles.postAuthor}>{m.author}</Text>
+                        <Text style={styles.postTime}> · {m.time}</Text>
+
+                        <TouchableOpacity
+                          style={styles.postMore}
+                          onPress={() => openPostMenu(m)}
+                        >
+                          <Feather name="more-vertical" size={16} color="#9fb4ff" />
+                        </TouchableOpacity>
+                      </View>
+                      <Text style={styles.postText}>{m.text}</Text>
+                      {/* Media thumbnail */}
+                      {m.media ? (
+                        <TouchableOpacity
+                          activeOpacity={0.95}
+                          onPress={() =>
+                            navigation.navigate("MediaViewer", {
+                              uri: m.media,
+                              author: m.author,
+                              time: m.time,
+                            })
+                          }
+                          style={styles.mediaWrapper}
+                        >
+                          <Image source={{ uri: m.media }} style={styles.mediaImage} />
+                        </TouchableOpacity>
+                      ) : null}
+
+                      {/* <View style={styles.threadWrapper}>
+                        <View style={styles.threadRepliesBox}>
+
+                          <View style={styles.threadShortRail} />
+
+                          {m.replies.map((r, index) => (
+                            <View key={r.id} style={styles.replyRowAligned}>
+
+                             
+                              <View style={styles.replyRail}>
+                                <View style={styles.replyConnector} />
+                              </View>
+
+                              
+                              <Image source={{ uri: r.avatar }} style={styles.replyAvatar} />
+
+                           
+                              <View style={styles.replyTextWrap}>
+                                <Text style={styles.replyAuthor}>
+                                  {r.author} · <Text style={styles.replyTime}>{r.time}</Text>
+                                </Text>
+                                <Text style={styles.replyText}>{r.text}</Text>
+                              </View>
+
+                             
+                              <TouchableOpacity style={styles.replyHeart}>
+                                <Feather name="heart" size={16} color="#ff2d55" />
+                                <Text style={styles.replyHeartCount}>15.8k</Text>
+                              </TouchableOpacity>
+
+                            </View>
+                          ))}
+
+                        </View>
+                      </View> */}
+                      <View style={styles.threadWrapper}>
+                        <View style={styles.threadRepliesBox}>
+
+                          {/* vertical line */}
+                          <View style={styles.threadMainRail} />
+
+                          {m.replies.map((r, index) => (
+                            <View key={r.id}>
+
+                              <View style={styles.replyRowAligned}>
+                                <View style={styles.elbowContainer}>
+                                  <View style={styles.replyElbow} />
+                                </View>
+
+                                <Image source={{ uri: r.avatar }} style={styles.replyAvatar} />
+
+                                <View style={styles.replyTextWrap}>
+                                  <Text style={styles.replyAuthor}>
+                                    {r.author} · <Text style={styles.replyTime}>{r.time}</Text>
+                                  </Text>
+                                  <Text style={styles.replyText}>{r.text}</Text>
+                                </View>
+
+                                <TouchableOpacity style={styles.replyHeart}>
+                                  <Feather name="heart" size={16} color="#ff2d55" />
+                                  <Text style={styles.replyHeartCount}>15.8k</Text>
+                                </TouchableOpacity>
+                              </View>
+
+                              {/* 🔵 CONNECTOR BETWEEN CARDS */}
+                              {index < m.replies.length - 1 && (
+                                <View style={styles.replyBetweenDivider} />
+                              )}
+
+                            </View>
+                          ))}
+
+                        </View>
+                      </View>
+
+
+                    </View>
+                  </View>
+
+
+
+                  {/* Reaction + replies summary */}
+                  {/* <View style={styles.reactionRow}>
+                    <TouchableOpacity
+                      style={styles.reactionBtn}
+                      onPress={() => handleLike(m.id)}
+                    >
+                      <Feather name="heart" size={18} color={m.liked ? "#ff6b81" : "#9fb4ff"} />
+                      <Text style={styles.reactionCount}>
+                        {formatCount(m.likes || 0)}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.replyBtn}>
+                      <Feather name="corner-down-left" size={16} color="#9fb4ff" />
+                      <Text style={styles.replyText}>
+                        {m.replies?.length ?? 0} replies
+                      </Text>
+                    </TouchableOpacity>
+                  </View> */}
+
+                  {/* Threaded replies */}
+
+
+                </View>
+              );
+            }
+
+            if (m.type === "message") {
+              return (
+                <View key={m.id} style={styles.simpleMessage}>
+                  <Image source={{ uri: m.avatar }} style={styles.smallAvatar} />
+                  <View style={{ marginLeft: 10, flex: 1 }}>
+                    <Text style={styles.msgAuthor}>
+                      {m.author} · <Text style={styles.msgTime}>{m.time}</Text>
+                    </Text>
+                    <Text style={styles.msgText}>{m.text}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.msgMoreBtn}
+                    onPress={() => openPostMenu(m)}
+                  >
+                    <Feather name="more-vertical" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+              );
+            }
+
+            if (m.type === "voice") {
+              return (
+                <View key={m.id} style={styles.voiceMessage}>
+                  <View style={styles.voiceMessageRow}>
+                    <Ionicons name="mic" size={20} color="#9fb4ff" />
+                    <View style={styles.voiceWave}>
+                      <View style={styles.voiceWaveBar} />
+                      <View style={[styles.voiceWaveBar, { height: 12 }]} />
+                      <View style={[styles.voiceWaveBar, { height: 16 }]} />
+                      <View style={[styles.voiceWaveBar, { height: 20 }]} />
+                      <View style={[styles.voiceWaveBar, { height: 16 }]} />
+                      <View style={[styles.voiceWaveBar, { height: 12 }]} />
+                      <View style={styles.voiceWaveBar} />
+                    </View>
+                    <Text style={styles.voiceDuration}>{m.duration}s</Text>
+                  </View>
+                  <View style={styles.voiceMessageInfo}>
+                    <Text style={styles.msgAuthor}>
+                      {m.author} · <Text style={styles.msgTime}>{m.time}</Text>
+                    </Text>
+                  </View>
+                </View>
+              );
+            }
+
+            return null;
+          })}
+
+          {/* day divider */}
+          <View style={styles.dayDivider}>
+            <Text style={styles.dayDividerText}>Today</Text>
+          </View>
+
+          <View style={{ height: 100 }} />
+        </ScrollView>
+
+        {/* Reply Indicator */}
+        {replyTargetAuthor && (
+          <View style={styles.replyIndicator}>
+            <View style={styles.replyIndicatorContent}>
+              <Text style={styles.replyIndicatorText}>
+                Replying to @{replyTargetAuthor}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setReplyTarget(null);
+                  setReplyTargetAuthor(null);
                 }}
               >
-                {/* Author row */}
-                <View style={styles.postHeader}>
-                  <Image source={{ uri: m.avatar }} style={styles.postAvatar} />
-                  <View style={styles.postMeta}>
-                    <View style={styles.postMetaRow}>
-                      <Text style={styles.postAuthor}>{m.author}</Text>
-                      <Text style={styles.postTime}> · {m.time}</Text>
+                <Feather name="x" size={16} color="#9fb4ff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
-                      <TouchableOpacity
-                        style={styles.postMore}
-                        onPress={() => openPostMenu(m)}
-                      >
-                        <Feather name="more-vertical" size={16} color="#9fb4ff" />
-                      </TouchableOpacity>
-                    </View>
-                    <Text style={styles.postText}>{m.text}</Text>
-                  </View>
-                </View>
+        {/* Input bar */}
+        <View style={[styles.inputBarContainer, { bottom: Platform.OS === 'ios' ? (keyboardHeight ? keyboardHeight : scale(18)) : (keyboardHeight ? keyboardHeight : scale(12)) }]}>
+          <View style={styles.inputBar}>
+            {/* left quick icons */}
+            <View style={styles.leftIcons}>
+              <TouchableOpacity style={styles.plusBtn} onPress={openActions}>
+                <Ionicons name="add" size={18} color="#9fb4ff" />
+              </TouchableOpacity>
 
-                {/* Media thumbnail */}
-                {m.media ? (
-                  <TouchableOpacity
-                    activeOpacity={0.95}
-                    onPress={() =>
-                      navigation.navigate("MediaViewer", {
-                        uri: m.media,
-                        author: m.author,
-                        time: m.time,
-                      })
-                    }
-                    style={styles.mediaWrapper}
-                  >
-                    <Image source={{ uri: m.media }} style={styles.mediaImage} />
-                  </TouchableOpacity>
-                ) : null}
+              <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={toggleEmoji}>
+                <Feather name="smile" size={18} color="#9fb4ff" />
+              </TouchableOpacity>
+            </View>
 
-                {/* Reaction + replies summary */}
-                <View style={styles.reactionRow}>
-                  <TouchableOpacity 
-                    style={styles.reactionBtn}
-                    onPress={() => handleLike(m.id)}
-                  >
-                    <Feather name="heart" size={18} color={m.liked ? "#ff6b81" : "#9fb4ff"} />
-                    <Text style={styles.reactionCount}>
-                      {formatCount(m.likes || 0)}
-                    </Text>
-                  </TouchableOpacity>
+            {/* Input field */}
+            <View style={styles.inputWrapperNew}>
+              <TextInput
+                ref={inputRef}
+                value={inputValue}
+                onChangeText={(t) => setInputValue(t)}
+                placeholder="Message #general..."
+                placeholderTextColor="#9aa4c8"
+                style={styles.inputNew}
+                multiline={false}
+                returnKeyType="send"
+                onSubmitEditing={sendMessage}
+              />
 
-                  <TouchableOpacity style={styles.replyBtn}>
-                    <Feather name="corner-down-left" size={16} color="#9fb4ff" />
-                    <Text style={styles.replyText}>
-                      {m.replies?.length ?? 0} replies
-                    </Text>
-                  </TouchableOpacity>
-                </View>
 
-                {/* Threaded replies */}
-                <View style={styles.threadWrapper}>
-                  {m.replies?.map((r, idx) => (
-                    <View key={r.id} style={styles.replyRow}>
-                      <View style={styles.connectorColumn}>
-                        <View style={styles.dot} />
-                        <View style={styles.vertLine} />
-                      </View>
+            </View>
 
-                      <View style={styles.replyContent}>
-                        <View style={styles.replyHeader}>
-                          <Image
-                            source={{ uri: r.avatar }}
-                            style={styles.smallAvatar}
-                          />
-                          <View style={{ marginLeft: 8 }}>
-                            <Text style={styles.replyAuthor}>{r.author}</Text>
-                            <Text style={styles.replyTime}>{r.time}</Text>
-                          </View>
-                        </View>
-
-                        <Text style={styles.replyTextBody}>{r.text}</Text>
-
-                        <View style={styles.replyActions}>
-                          <TouchableOpacity style={styles.replyActionBtn}>
-                            <Feather name="heart" size={14} color="#9fb4ff" />
-                            <Text style={styles.replyActionText}>15.8k</Text>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity
-                            style={[styles.replyActionBtn, { marginLeft: 12 }]}
-                            onPress={() => {
-                              const replyText = `@${r.author} `;
-                              setInputValue(replyText);
-                              setReplyTarget(m.id);
-                              setReplyTargetAuthor(r.author);
-                              inputRef.current?.focus();
-                            }}
-                          >
-                            <Feather name="corner-up-left" size={14} color="#9fb4ff" />
-                            <Text style={styles.replyActionText}>Reply</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            );
-          }
-
-          if (m.type === "message") {
-            return (
-              <View key={m.id} style={styles.simpleMessage}>
-                <Image source={{ uri: m.avatar }} style={styles.smallAvatar} />
-                <View style={{ marginLeft: 10, flex: 1 }}>
-                  <Text style={styles.msgAuthor}>
-                    {m.author} · <Text style={styles.msgTime}>{m.time}</Text>
-                  </Text>
-                  <Text style={styles.msgText}>{m.text}</Text>
-                </View>
+            {/* right area: mic OR send */}
+            <View style={styles.rightIcons}>
+              {!inputValue.trim() ? (
                 <TouchableOpacity
-                  style={styles.msgMoreBtn}
-                  onPress={() => openPostMenu(m)}
+                  style={[
+                    styles.micBtn,
+                    isRecording && styles.micBtnRecording
+                  ]}
+                  activeOpacity={0.7}
+                  onPress={isRecording ? stopRecording : startRecording}
+                  onLongPress={startRecording}
                 >
-                  <Feather name="more-vertical" size={14} color="#64748b" />
+                  {isRecording ? (
+                    <>
+                      <View style={styles.recordingDot} />
+                      <Text style={styles.recordingTime}>
+                        {formatRecordingTime(recordingTime)}
+                      </Text>
+                      <Ionicons name="stop" size={20} color="#ef4444" />
+                    </>
+                  ) : (
+                    <Ionicons name="mic" size={20} color="#9fb4ff" />
+                  )}
                 </TouchableOpacity>
-              </View>
-            );
-          }
-
-          if (m.type === "voice") {
-            return (
-              <View key={m.id} style={styles.voiceMessage}>
-                <View style={styles.voiceMessageRow}>
-                  <Ionicons name="mic" size={20} color="#9fb4ff" />
-                  <View style={styles.voiceWave}>
-                    <View style={styles.voiceWaveBar} />
-                    <View style={[styles.voiceWaveBar, { height: 12 }]} />
-                    <View style={[styles.voiceWaveBar, { height: 16 }]} />
-                    <View style={[styles.voiceWaveBar, { height: 20 }]} />
-                    <View style={[styles.voiceWaveBar, { height: 16 }]} />
-                    <View style={[styles.voiceWaveBar, { height: 12 }]} />
-                    <View style={styles.voiceWaveBar} />
-                  </View>
-                  <Text style={styles.voiceDuration}>{m.duration}s</Text>
-                </View>
-                <View style={styles.voiceMessageInfo}>
-                  <Text style={styles.msgAuthor}>
-                    {m.author} · <Text style={styles.msgTime}>{m.time}</Text>
-                  </Text>
-                </View>
-              </View>
-            );
-          }
-
-          return null;
-        })}
-
-        {/* day divider */}
-        <View style={styles.dayDivider}>
-          <Text style={styles.dayDividerText}>Today</Text>
-        </View>
-
-        <View style={{ height: 100 }} />
-      </ScrollView>
-
-      {/* Reply Indicator */}
-      {replyTargetAuthor && (
-        <View style={styles.replyIndicator}>
-          <View style={styles.replyIndicatorContent}>
-            <Text style={styles.replyIndicatorText}>
-              Replying to @{replyTargetAuthor}
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                setReplyTarget(null);
-                setReplyTargetAuthor(null);
-              }}
-            >
-              <Feather name="x" size={16} color="#9fb4ff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {/* Input bar */}
-      <View style={[styles.inputBarContainer, { bottom: Platform.OS === 'ios' ? (keyboardHeight ? keyboardHeight : scale(18)) : (keyboardHeight ? keyboardHeight : scale(12)) }]}>
-        <View style={styles.inputBar}>
-          {/* left quick icons */}
-          <View style={styles.leftIcons}>
-            <TouchableOpacity style={styles.plusBtn} onPress={openActions}>
-              <Ionicons name="add" size={18} color="#9fb4ff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={toggleEmoji}>
-              <Feather name="smile" size={18} color="#9fb4ff" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Input field */}
-          <View style={styles.inputWrapperNew}>
-            <TextInput
-              ref={inputRef}
-              value={inputValue}
-              onChangeText={(t) => setInputValue(t)}
-              placeholder="Message #general..."
-              placeholderTextColor="#9aa4c8"
-              style={styles.inputNew}
-              multiline={false}
-              returnKeyType="send"
-              onSubmitEditing={sendMessage}
-            />
-
-            
-          </View>
-
-          {/* right area: mic OR send */}
-          <View style={styles.rightIcons}>
-            {!inputValue.trim() ? (
-              <TouchableOpacity
-                style={[
-                  styles.micBtn,
-                  isRecording && styles.micBtnRecording
-                ]}
-                activeOpacity={0.7}
-                onPress={isRecording ? stopRecording : startRecording}
-                onLongPress={startRecording}
-              >
-                {isRecording ? (
-                  <>
-                    <View style={styles.recordingDot} />
-                    <Text style={styles.recordingTime}>
-                      {formatRecordingTime(recordingTime)}
-                    </Text>
-                    <Ionicons name="stop" size={20} color="#ef4444" />
-                  </>
-                ) : (
-                  <Ionicons name="mic" size={20} color="#9fb4ff" />
-                )}
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.sendBtn}
-                activeOpacity={0.7}
-                onPress={sendMessage}
-              >
-                <Feather name="send" size={18} color="#071022" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-
-      {/* Modal Menu */}
-      {/* Actions modal (upload / take / file) */}
-      <Modal
-        visible={actionsVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={closeActions}
-      >
-        <TouchableWithoutFeedback onPress={closeActions}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={[styles.sheetWrapper, { paddingBottom: 24 }]}>
-                <View style={styles.sheetHandle} />
-
-                <ScrollView style={styles.menuList} contentContainerStyle={{ paddingBottom: 24 }}>
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => { closeActions(); openImagePicker(); }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.menuIcon}>
-                      <Feather name="image" size={18} color="#9fb4ff" />
-                    </View>
-                    <Text style={styles.menuLabel}>Upload Image</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => { closeActions(); takePhoto(); }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.menuIcon}>
-                      <Feather name="camera" size={18} color="#9fb4ff" />
-                    </View>
-                    <Text style={styles.menuLabel}>Take Photo</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => { closeActions(); pickDocument(); }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.menuIcon}>
-                      <Feather name="file" size={18} color="#9fb4ff" />
-                    </View>
-                    <Text style={styles.menuLabel}>Upload File</Text>
-                  </TouchableOpacity>
-
-                  <View style={{ height: 8 }} />
-
-                  <TouchableOpacity style={styles.reportBtn} onPress={closeActions} activeOpacity={0.7}>
-                    <View style={styles.reportIcon}>
-                      <Feather name="x" size={18} color="#ff6b6b" />
-                    </View>
-                    <Text style={styles.reportLabel}>Cancel</Text>
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-      {/* Emoji picker modal */}
-      <Modal
-        visible={emojiVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setEmojiVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setEmojiVisible(false)}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={[styles.sheetWrapper, { maxHeight: 240, paddingBottom: 12 }]}>
-                <View style={styles.sheetHandle} />
-                <View style={{ paddingHorizontal: scale(12), paddingBottom: scale(8) }}>
-                  <TextInput
-                    placeholder="Search emoji (smile, joy...)"
-                    placeholderTextColor="#9aa4c8"
-                    value={emojiSearch}
-                    onChangeText={setEmojiSearch}
-                    style={[styles.inputNew, { backgroundColor: '#071022', borderRadius: scale(10), paddingHorizontal: scale(10) }]}
-                  />
-                </View>
-                <View style={styles.emojiGrid}>
-                  {EMOJI_LIST.filter(it => !emojiSearch || it.n.includes(emojiSearch.toLowerCase()) || it.e === emojiSearch).map((it) => (
-                    <TouchableOpacity
-                      key={it.e}
-                      style={styles.emojiItem}
-                      onPress={() => { setInputValue(v => v + it.e); setEmojiVisible(false); }}
-                      activeOpacity={0.8}
-                    >
-                      <Text style={{ fontSize: scale(22) }}>{it.e}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-      <Modal
-        visible={menuVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={closeMenu}
-      >
-        <TouchableWithoutFeedback onPress={closeMenu}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.sheetWrapper}>
-                <View style={styles.sheetHandle} />
-
-                <ScrollView
-                  style={styles.menuList}
-                  contentContainerStyle={{ paddingBottom: 24 }}
+              ) : (
+                <TouchableOpacity
+                  style={styles.sendBtn}
+                  activeOpacity={0.7}
+                  onPress={sendMessage}
                 >
-                  {[
-                    { key: "reply", label: "Reply", icon: "corner-down-left" },
-                    { key: "forward", label: "Forward", icon: "corner-up-right" },
-                    { key: "copy", label: "Copy message", icon: "copy" },
-                    { key: "mark", label: "Mark Unread", icon: "moon" },
-                    { key: "mention", label: "Mention", icon: "at-sign" },
-                    { key: "copylink", label: "Copy Messages Link", icon: "link" },
-                    { key: "addorbits", label: "Add Orbits", icon: "users" },
-                  ].map((it) => (
+                  <Feather name="send" size={18} color="#071022" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Modal Menu */}
+        {/* Actions modal (upload / take / file) */}
+        <Modal
+          visible={actionsVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={closeActions}
+        >
+          <TouchableWithoutFeedback onPress={closeActions}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={[styles.sheetWrapper, { paddingBottom: 24 }]}>
+                  <View style={styles.sheetHandle} />
+
+                  <ScrollView style={styles.menuList} contentContainerStyle={{ paddingBottom: 24 }}>
                     <TouchableOpacity
-                      key={it.key}
                       style={styles.menuItem}
-                      onPress={() => handleMenuAction(it.key)}
+                      onPress={() => { closeActions(); openImagePicker(); }}
                       activeOpacity={0.7}
                     >
                       <View style={styles.menuIcon}>
-                        <Feather name={it.icon} size={18} color="#9fb4ff" />
+                        <Feather name="image" size={18} color="#9fb4ff" />
                       </View>
-                      <Text style={styles.menuLabel}>{it.label}</Text>
+                      <Text style={styles.menuLabel}>Upload Image</Text>
                     </TouchableOpacity>
-                  ))}
 
-                  <View style={{ height: 8 }} />
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={() => { closeActions(); takePhoto(); }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.menuIcon}>
+                        <Feather name="camera" size={18} color="#9fb4ff" />
+                      </View>
+                      <Text style={styles.menuLabel}>Take Photo</Text>
+                    </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.reportBtn}
-                    onPress={() => handleMenuAction("report")}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.reportIcon}>
-                      <Feather name="flag" size={18} color="#ff6b6b" />
-                    </View>
-                    <Text style={styles.reportLabel}>Report</Text>
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={() => { closeActions(); pickDocument(); }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.menuIcon}>
+                        <Feather name="file" size={18} color="#9fb4ff" />
+                      </View>
+                      <Text style={styles.menuLabel}>Upload File</Text>
+                    </TouchableOpacity>
 
-      {/* Floating toast */}
-      {toastVisible ? (
-        <Animated.View
-          style={[
-            styles.floatingToast,
-            { top: toastTop, opacity: toastOpacity, left: scale(70) },
-          ]}
+                    <View style={{ height: 8 }} />
+
+                    <TouchableOpacity style={styles.reportBtn} onPress={closeActions} activeOpacity={0.7}>
+                      <View style={styles.reportIcon}>
+                        <Feather name="x" size={18} color="#ff6b6b" />
+                      </View>
+                      <Text style={styles.reportLabel}>Cancel</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        {/* Emoji picker modal */}
+        <Modal
+          visible={emojiVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setEmojiVisible(false)}
         >
-          <Feather name={toastIcon} size={16} color={toastIconColor} />
-          <Text style={styles.floatingToastText}>{toastText}</Text>
-        </Animated.View>
-      ) : null}
+          <TouchableWithoutFeedback onPress={() => setEmojiVisible(false)}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={[styles.sheetWrapper, { maxHeight: 240, paddingBottom: 12 }]}>
+                  <View style={styles.sheetHandle} />
+                  <View style={{ paddingHorizontal: scale(12), paddingBottom: scale(8) }}>
+                    <TextInput
+                      placeholder="Search emoji (smile, joy...)"
+                      placeholderTextColor="#9aa4c8"
+                      value={emojiSearch}
+                      onChangeText={setEmojiSearch}
+                      style={[styles.inputNew, { backgroundColor: '#071022', borderRadius: scale(10), paddingHorizontal: scale(10) }]}
+                    />
+                  </View>
+                  <View style={styles.emojiGrid}>
+                    {EMOJI_LIST.filter(it => !emojiSearch || it.n.includes(emojiSearch.toLowerCase()) || it.e === emojiSearch).map((it) => (
+                      <TouchableOpacity
+                        key={it.e}
+                        style={styles.emojiItem}
+                        onPress={() => { setInputValue(v => v + it.e); setEmojiVisible(false); }}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={{ fontSize: scale(22) }}>{it.e}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        <Modal
+          visible={menuVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={closeMenu}
+        >
+          <TouchableWithoutFeedback onPress={closeMenu}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <LinearGradient
+                  colors={["#3255BA", "rgba(50,85,186,0)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}   // top → bottom wipe
+                  style={styles.gradientBorder}
+                >
+                  <View style={styles.sheetWrapper}>
+                    <View style={styles.sheetHandle} />
 
-      {/* Search modal */}
-      <Modal visible={searchVisible} animationType="fade" transparent onRequestClose={closeSearch}>
-        <TouchableWithoutFeedback onPress={closeSearch}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={[styles.sheetWrapper, { maxHeight: SCREEN_H * 0.6, paddingBottom: 12 }]}>
-                <View style={styles.sheetHandle} />
-                <View style={{ paddingHorizontal: scale(12), paddingBottom: scale(8) }}>
-                  <TextInput
-                    placeholder="Search messages, authors, files..."
-                    placeholderTextColor="#9aa4c8"
-                    value={searchQuery}
-                    onChangeText={handleSearch}
-                    style={[styles.inputNew, { backgroundColor: '#071022', borderRadius: scale(10), paddingHorizontal: scale(10) }]}
+                    <ScrollView
+                      style={styles.menuList}
+                      contentContainerStyle={{ paddingBottom: 24 }}
+                    >
+                      {[
+                        { key: "reply", label: "Reply", icon: "corner-down-left" },
+                        { key: "forward", label: "Forward", icon: "corner-up-right" },
+                        { key: "copy", label: "Copy message", icon: "copy" },
+                        { key: "mark", label: "Mark Unread", icon: "moon" },
+                        { key: "mention", label: "Mention", icon: "at-sign" },
+                        { key: "copylink", label: "Copy Messages Link", icon: "link" },
+                        { key: "addorbits", label: "Add Orbits", icon: "user-plus" },
+                      ].map((it) => (
+                        <TouchableOpacity
+                          key={it.key}
+                          style={styles.menuItem}
+                          onPress={() => handleMenuAction(it.key)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.menuIcon}>
+                            <Feather name={it.icon} size={18} color="#9fb4ff" />
+                          </View>
+                          <Text style={styles.menuLabel}>{it.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+
+                      <View style={{ height: 8 }} />
+
+                      <TouchableOpacity
+                        style={styles.reportBtn}
+                        onPress={() => handleMenuAction("report")}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.reportIcon}>
+                          <Feather name="flag" size={18} color="#ff6b6b" />
+                        </View>
+                        <Text style={styles.reportLabel}>Report</Text>
+                      </TouchableOpacity>
+                    </ScrollView>
+                  </View></LinearGradient>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        {/* Floating toast */}
+        {toastVisible ? (
+          <Animated.View
+            style={[
+              styles.floatingToast,
+              { top: toastTop, opacity: toastOpacity, left: scale(70) },
+            ]}
+          >
+            <Feather name={toastIcon} size={16} color={toastIconColor} />
+            <Text style={styles.floatingToastText}>{toastText}</Text>
+          </Animated.View>
+        ) : null}
+
+        {/* Search modal */}
+        <Modal visible={searchVisible} animationType="fade" transparent onRequestClose={closeSearch}>
+          <TouchableWithoutFeedback onPress={closeSearch}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={[styles.sheetWrapper, { maxHeight: SCREEN_H * 0.6, paddingBottom: 12 }]}>
+                  <View style={styles.sheetHandle} />
+                  <View style={{ paddingHorizontal: scale(12), paddingBottom: scale(8) }}>
+                    <TextInput
+                      placeholder="Search messages, authors, files..."
+                      placeholderTextColor="#9aa4c8"
+                      value={searchQuery}
+                      onChangeText={handleSearch}
+                      style={[styles.inputNew, { backgroundColor: '#071022', borderRadius: scale(10), paddingHorizontal: scale(10) }]}
+                    />
+                  </View>
+
+                  <FlatList
+                    data={searchResults}
+                    keyExtractor={(it) => it.id}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity style={styles.menuItem} onPress={() => jumpToMessage(item)}>
+                        <View style={styles.menuIcon}><Image source={{ uri: item.avatar }} style={{ width: scale(36), height: scale(36), borderRadius: scale(18) }} /></View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.menuLabel}>{item.author} · {item.time}</Text>
+                          <Text style={{ color: '#cbd5f5', marginTop: scale(6) }} numberOfLines={2}>{item.text || item.file || item.media || ''}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                    ListEmptyComponent={() => (
+                      <View style={{ padding: scale(16), alignItems: 'center' }}><Text style={{ color: '#9fb4ff' }}>No results</Text></View>
+                    )}
                   />
                 </View>
-
-                <FlatList
-                  data={searchResults}
-                  keyExtractor={(it) => it.id}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.menuItem} onPress={() => jumpToMessage(item)}>
-                      <View style={styles.menuIcon}><Image source={{ uri: item.avatar }} style={{ width: scale(36), height: scale(36), borderRadius: scale(18) }} /></View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.menuLabel}>{item.author} · {item.time}</Text>
-                        <Text style={{ color: '#cbd5f5', marginTop: scale(6) }} numberOfLines={2}>{item.text || item.file || item.media || ''}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                  ListEmptyComponent={() => (
-                    <View style={{ padding: scale(16), alignItems: 'center' }}><Text style={{ color: '#9fb4ff' }}>No results</Text></View>
-                  )}
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    </KeyboardAvoidingView>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -1025,6 +1065,30 @@ const styles = StyleSheet.create({
 
   content: { paddingHorizontal: scale(12), paddingBottom: scale(160) },
 
+
+  threadShortRail: {
+    position: "absolute",
+    left: scale(6),
+    top: scale(8),
+    bottom: scale(8),
+    width: 2,
+    backgroundColor: "#E0E0DD",
+    borderRadius: 1,
+  },
+  replyConnector: {
+    width: scale(14),
+    height: scale(14),
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: "#E0E0DD",
+    borderBottomLeftRadius: scale(6),
+  },
+  replyRail: {
+    width: scale(18),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   postCard: { marginTop: scale(12) },
   postHeader: {
     flexDirection: "row",
@@ -1039,6 +1103,25 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#22c55e",
   },
+
+  threadRepliesBox: {
+    position: "relative",
+    paddingLeft: scale(9), // space for line + elbow
+    paddingTop: scale(10),     // ⬅️ space before first elbow
+    paddingBottom: scale(10),
+  },
+
+  threadMainRail: {
+    height: 100,
+    position: "absolute",
+    left: scale(9),     // aligns with elbow start
+    top: scale(10),            // ⬅️ start at first elbow
+    bottom: scale(20),      // ⬅️ END at last elbow (FIX)
+    width: 2,
+    backgroundColor: "#E0E0DD",
+    borderRadius: 1,
+  },
+
   postMeta: { flex: 1 },
   postMetaRow: { flexDirection: "row", alignItems: "center" },
   postAuthor: { color: "#E5ECFF", fontWeight: "700", fontSize: scale(14) },
@@ -1053,7 +1136,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#1f2937",
   },
-  mediaImage: { width: "100%", height: undefined, aspectRatio: 16 / 9, resizeMode: "cover" },
+  mediaImage: { width: "100%", height: undefined, aspectRatio: 16 / 9, resizeMode: "cover", paddingLeft: scale(12) },
+  replyBetweenDivider: {
+    height: 1,
+    backgroundColor: "rgba(50, 85, 186, 0.3)", // #3255BA @ 30%
+
+  },
 
   reactionRow: {
     flexDirection: "row",
@@ -1074,7 +1162,7 @@ const styles = StyleSheet.create({
   },
   replyText: { color: "#9fb4ff", marginLeft: 6 },
 
-  threadWrapper: { marginTop: scale(6), paddingLeft: scale(12) },
+  threadWrapper: { marginTop: scale(6) },
   replyRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -1132,6 +1220,148 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#1e293b",
   },
+  // threadContainer: {
+  //   flexDirection: "row",
+  //   marginTop: scale(8),
+  //   paddingLeft: scale(12),
+  // },
+
+  // threadRail: {
+  //   width: 2,
+  //   backgroundColor: "#E0E0DD",
+  //   marginRight: scale(11),
+  //   borderRadius: 1,
+  // },
+
+  threadReplies: {
+    flex: 1,
+  },
+
+  // replyItem: {
+  //   flexDirection: "row",
+  //   marginBottom: scale(14),
+  //   position: "relative",
+  // },
+
+  replyConnector: {
+    width: scale(36),
+    height: scale(16),
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: "#E0E0DD",
+    borderBottomLeftRadius: scale(6),
+    marginTop: scale(10),
+    // marginRight: scale(10),
+  },
+  replyRowAligned: {
+    flexDirection: "row",
+    alignItems: "center", // 🔑 critical
+    marginBottom: scale(18),
+  },
+  elbowContainer: {
+    width: scale(34),
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+  replyElbow: {
+    width: scale(22),
+    height: scale(18),
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: "#E0E0DD",
+    borderBottomLeftRadius: scale(10),
+  },
+
+  replyAvatar: {
+    width: scale(28),
+    height: scale(28),
+    borderRadius: scale(14),
+    marginRight: scale(8),
+    borderWidth: 2,
+    borderColor: "#22c55e",
+  },
+
+  replyTextWrap: {
+    flex: 1,
+  },
+
+  replyHeart: {
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: scale(48),
+  },
+  replyRail: {
+    width: scale(18),
+    alignItems: "center",
+  },
+  replyTextWrap: {
+    flex: 1,
+    marginRight: scale(8),
+  },
+
+  replyBubble: {
+    flex: 1,
+    // backgroundColor: "#0f172a",
+    // padding: scale(12),
+    borderRadius: scale(14),
+    // borderWidth: 1,
+    // borderColor: "#1e293b",
+  },
+  replyDivider: {
+    height: 1,
+    backgroundColor: "#1e293b",
+    marginTop: scale(12),
+    marginHorizontal: scale(4),
+    opacity: 0.9,
+  },
+
+  // replyHeaderRow: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   marginBottom: scale(6),
+  // },
+
+  replyAvatar: {
+    width: scale(28),
+    height: scale(28),
+    borderRadius: scale(14),
+    marginRight: scale(8),
+    borderWidth: 2,
+    borderColor: "#22c55e",
+  },
+
+  replyAuthor: {
+    color: "#E5ECFF",
+    fontWeight: "700",
+    fontSize: scale(13),
+  },
+
+  replyTime: {
+    color: "#9fb4ff",
+    fontSize: scale(11),
+    marginLeft: scale(4),
+  },
+
+  replyHeart: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: scale(48),       // 🔑 prevents clipping
+    paddingVertical: scale(6) // 🔑 vertical safety
+  },
+
+  replyHeartCount: {
+    color: "#9fb4ff",
+    fontSize: scale(11),
+    marginLeft: 4,
+  },
+
+  replyText: {
+    color: "#cbd5f5",
+    fontSize: scale(13),
+    lineHeight: scale(18),
+  },
+
   voiceMessageRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1208,10 +1438,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#1f2937",
   },
-  leftIcons: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    marginRight: scale(6) 
+  leftIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: scale(6)
   },
   iconBtn: {
     width: scale(36),
@@ -1220,30 +1450,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: scale(6),
   },
-  inputWrapperNew: { 
-    flex: 1, 
-    flexDirection: "row", 
+  inputWrapperNew: {
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     minHeight: scale(36),
   },
-  inputNew: { 
-    color: "#E5ECFF", 
-    fontSize: scale(14), 
+  inputNew: {
+    color: "#E5ECFF",
+    fontSize: scale(14),
     paddingVertical: scale(8),
     flex: 1,
     maxHeight: scale(80),
   },
-  plusBtn: { 
-    marginLeft: scale(8), 
-    width: scale(34), 
-    height: scale(34), 
-    borderRadius: scale(17), 
-    alignItems: "center", 
+  plusBtn: {
+    marginLeft: scale(8),
+    width: scale(34),
+    height: scale(34),
+    borderRadius: scale(17),
+    alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#0f172a",
   },
-  rightIcons: { 
-    marginLeft: scale(8) 
+  rightIcons: {
+    marginLeft: scale(8)
   },
   micBtn: {
     width: scale(80),
@@ -1297,6 +1527,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#1f2937",
   },
+  gradientBorder: {
+    borderRadius: 14,
+    padding: 1,                 // 👈 1px gradient border
+  },
+
+  innerContent: {
+    backgroundColor: "#071022",
+    borderRadius: 13,           // borderRadius - 1px
+  },
   sheetHandle: {
     width: scale(60),
     height: scale(4),
@@ -1310,12 +1549,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "transparent",
-    paddingVertical: scale(14),
+    paddingVertical: scale(8),
     paddingHorizontal: scale(8),
-    borderRadius: scale(12),
-    marginBottom: scale(8),
+    borderRadius: scale(14),
+    marginBottom: scale(15),
     borderWidth: 1,
-    borderColor: "#172033",
+    borderColor: "#3154BA",
+    backgroundColor: '#3255BA4D',
+
   },
   menuIcon: {
     width: scale(36),
@@ -1337,9 +1578,9 @@ const styles = StyleSheet.create({
   reportBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: scale(14),
+    paddingVertical: scale(8),
     paddingHorizontal: scale(8),
-    borderRadius: scale(12),
+    borderRadius: scale(14),
     borderWidth: 1,
     borderColor: "#7f1d1d",
     backgroundColor: "#3f1420",

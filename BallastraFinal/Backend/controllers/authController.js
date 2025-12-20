@@ -28,29 +28,44 @@ export const signup = async (req, res) => {
   try {
     const { username, name, email, password, avatar_url } = req.body;
 
-    // 1. Block if VERIFIED email exists
-    const verifiedEmailUser = await findVerifiedUserByEmail(email);
+    // Normalize email (lowercase and trim) for case-insensitive comparison
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
+
+    if (!normalizedEmail) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    console.log('Signup attempt for email:', normalizedEmail);
+
+    // 1. Block if VERIFIED email exists (case-insensitive check)
+    const verifiedEmailUser = await findVerifiedUserByEmail(normalizedEmail);
     if (verifiedEmailUser) {
+      console.log('Email already registered (verified):', normalizedEmail);
       return res.status(400).json({ message: 'Email already registered' });
     }
 
     // 2. Block if VERIFIED username exists
-    const verifiedUsernameUser = await findVerifiedUserByUsername(username);
+    const normalizedUsername = username ? username.trim() : '';
+    if (!normalizedUsername) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+
+    const verifiedUsernameUser = await findVerifiedUserByUsername(normalizedUsername);
     if (verifiedUsernameUser) {
       return res.status(400).json({ message: 'Username already taken' });
     }
 
-    // 3. Check if UNVERIFIED user already exists
-    let user = await findUserByEmail(email);
+    // 3. Check if UNVERIFIED user already exists (case-insensitive check)
+    let user = await findUserByEmail(normalizedEmail);
 
     if (!user) {
       // create new unverified user
       const hashedPassword = await bcrypt.hash(password, 10);
 
       user = await createUser({
-        username,
-        name,
-        email,
+        username: normalizedUsername,
+        name: name || normalizedUsername,
+        email: normalizedEmail,
         password: hashedPassword,
         avatar_url,
         is_verified: false
@@ -67,20 +82,33 @@ export const signup = async (req, res) => {
       ttlMinutes: 5
     });
 
-    await sendEmail({
-      to: email,
-      subject: 'Your Ballastra verification code',
-      text: `Your verification code is ${otpCode}`,
-      html: `
-        <p>Your Ballastra verification code is:</p>
-        <h2>${otpCode}</h2>
-        <p>This code expires in 5 minutes.</p>
-      `
-    });
+    // Try to send email, but don't fail signup if email fails (OTP is stored in DB)
+    try {
+      await sendEmail({
+        to: normalizedEmail,
+        subject: 'Your Ballastra verification code',
+        text: `Your verification code is ${otpCode}`,
+        html: `
+          <p>Your Ballastra verification code is:</p>
+          <h2>${otpCode}</h2>
+          <p>This code expires in 5 minutes.</p>
+        `
+      });
+      console.log('OTP email sent successfully to:', normalizedEmail);
+    } catch (emailError) {
+      console.error('Failed to send OTP email:', emailError);
+      // Still return success because OTP is stored in DB and can be retrieved
+      // In production, you might want to log this to a monitoring service
+      return res.status(200).json({
+        message: 'Account created. OTP generated but email sending failed. Please contact support.',
+        email: normalizedEmail,
+        warning: 'Email service unavailable'
+      });
+    }
 
     return res.status(200).json({
       message: 'OTP sent to email. Please verify to complete signup.',
-      email
+      email: normalizedEmail
     });
 
   } catch (error) {
@@ -98,8 +126,11 @@ export const verifySignupOtp = async (req, res) => {
     if (!email || !code)
       return res.status(400).json({ message: 'Email and OTP required' });
 
+    // Normalize email (lowercase and trim) for case-insensitive comparison
+    const normalizedEmail = email.trim().toLowerCase();
+
     // find user (verified OR unverified)
-    const user = await findUserByEmail(email);
+    const user = await findUserByEmail(normalizedEmail);
     if (!user)
       return res.status(404).json({ message: 'User not found' });
 
@@ -140,9 +171,16 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Normalize email (lowercase and trim) for case-insensitive comparison
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
+
+    if (!normalizedEmail) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
     const { rows } = await pool.query(
-      'SELECT * FROM users WHERE email = $1 AND is_verified = true LIMIT 1',
-      [email]
+      'SELECT * FROM users WHERE LOWER(TRIM(email)) = $1 AND is_verified = true LIMIT 1',
+      [normalizedEmail]
     );
 
     if (!rows.length)
@@ -276,9 +314,11 @@ export const appleLogin = async (req, res) => {
 /* ================= PASSWORD RESET ================= */
 
 async function getUserByEmail(email) {
+  // Normalize email (lowercase and trim) for case-insensitive comparison
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
   const { rows } = await pool.query(
-    'SELECT * FROM users WHERE email=$1 LIMIT 1',
-    [email]
+    'SELECT * FROM users WHERE LOWER(TRIM(email))=$1 LIMIT 1',
+    [normalizedEmail]
   );
   return rows[0];
 }
@@ -295,8 +335,11 @@ export async function forgotPassword(req, res, next) {
       });
     }
 
+    // Normalize email (lowercase and trim) for case-insensitive comparison
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Do NOT reveal whether user exists (security best practice)
-    const user = await getUserByEmail(email);
+    const user = await getUserByEmail(normalizedEmail);
 
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
@@ -394,7 +437,10 @@ export async function verifyOtp(req, res, next) {
     const { email, code } = req.body;
     if (!email || !code) return res.status(400).json({ success: false, message: 'email & code required' });
 
-    const user = await getUserByEmail(email);
+    // Normalize email (lowercase and trim) for case-insensitive comparison
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await getUserByEmail(normalizedEmail);
     if (!user) return res.status(404).json({ success: false, message: 'user not found' });
 
     // try both common purposes for compatibility
