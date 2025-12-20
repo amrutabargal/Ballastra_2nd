@@ -164,7 +164,7 @@ export default function NexusChat({ route, navigation }) {
                     <View style={styles.headerIconRow}>
                       {[
                         { icon: "search", screen: "Search" },
-                        { icon: "people", screen: "Members" },
+                        { icon: "people", screen: "Scanershare" },
                         { icon: "shield-checkmark", screen: "CommunitySettings" },
                       ].map((item, index) => (
                         <TouchableOpacity
